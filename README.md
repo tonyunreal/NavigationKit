@@ -1,20 +1,13 @@
-## Usage
+NavigationKit
+=============
+Turn-by-Turn driving directions using Apple Directions API.
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+Modified by Tony Borner (tonyunreal) .
 
-## Requirements
+Summary
+-------
+This is a fork of Axel Moller's NavigationKit project. You can find the original [here](https://github.com/sendus/NavigationKit).
 
-## Installation
-
-NavigationKit is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
-
-    pod "NavigationKit"
-
-## Author
-
-Axel Moller, axelmoller5@gmail.com
-
-## License
-
+License
+-------
 NavigationKit is available under the GPL license. See the LICENSE file for more info.
