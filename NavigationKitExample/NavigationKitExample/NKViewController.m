@@ -39,6 +39,11 @@
     return UIStatusBarStyleLightContent;
 }
 
+-(BOOL)prefersStatusBarHidden
+{
+    return NO;
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -67,6 +72,14 @@
     return routeLineRenderer;
 }
 
+-(void)mapView:(MKMapView *)mapView didUpdateUserLocation:(MKUserLocation *)userLocation
+{
+    if(self.mapView.region.span.latitudeDelta > 0.01)
+    {
+        [self.mapView setRegion:MKCoordinateRegionMake(userLocation.coordinate, MKCoordinateSpanMake(0.002, 0.002)) animated:YES];
+    }
+}
+
 #pragma mark - Navigation Methods
 
 - (void)navigateFrom:(NSString *)source to:(NSString *)destination {
@@ -92,6 +105,9 @@
             destinationPlacemark = [placemarks firstObject];
             
             NSLog(@"Geocoded address to {%f,%f} - {%f,%f}", [sourcePlacemark location].coordinate.latitude, [sourcePlacemark location].coordinate.longitude, [destinationPlacemark location].coordinate.latitude, [destinationPlacemark location].coordinate.longitude);
+            
+            // stop map view from updating user location
+            self.mapView.showsUserLocation = NO;
             
             self.navigationKit = [[NavigationKit alloc] initWithSource:[sourcePlacemark location].coordinate destination:[destinationPlacemark location].coordinate transportType:MKDirectionsTransportTypeAutomobile directionsService:NavigationKitDirectionsServiceAppleMaps];
             [self.navigationKit setDelegate:self];
@@ -280,6 +296,14 @@
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
     CLLocation *location = [locations firstObject];
     [self.navigationKit calculateActionForLocation:location];
+
+    // our own implementation of showing user location
+    //MKPointAnnotation *annotation = [[MKPointAnnotation alloc] init];
+    MKUserLocation *annotation = [[MKUserLocation alloc] init];
+    annotation.coordinate = location.coordinate;
+    annotation.title = @"Your Location";
+    [self.mapView removeAnnotations:self.mapView.annotations];
+    [self.mapView addAnnotation:annotation];
 }
 
 @end
