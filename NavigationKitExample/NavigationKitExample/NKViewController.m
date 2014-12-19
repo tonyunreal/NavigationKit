@@ -85,35 +85,38 @@
 - (void)navigateFrom:(NSString *)source to:(NSString *)destination {
     NSLog(@"Looking up driving directions from \"%@\" to \"%@\"", source, destination);
     
-    CLPlacemark __block *sourcePlacemark, __block *destinationPlacemark;
+    MKLocalSearchRequest *request =
+    [[MKLocalSearchRequest alloc] init];
+    request.naturalLanguageQuery = destination;
+    request.region = _mapView.region;
     
-    CLGeocoder *geoCoder = [[CLGeocoder alloc] init];
-    [geoCoder geocodeAddressString:source completionHandler:^(NSArray *placemarks, NSError *error) {
-        if(error) {
-            NSLog(@"Could not find Source address");
-            return;
+    MKLocalSearch *search =
+    [[MKLocalSearch alloc]initWithRequest:request];
+    
+    [search startWithCompletionHandler:^(MKLocalSearchResponse
+                                         *response, NSError *error) {
+        if (response.mapItems.count == 0)
+        {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error Message" message:@"Could not find Destination address" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+            [alert show];
         }
-        
-        sourcePlacemark = [placemarks firstObject];
-        
-        [geoCoder geocodeAddressString:destination completionHandler:^(NSArray *placemarks, NSError *error) {
-            if(error) {
-                NSLog(@"Could not find Destination address");
-                return;
-            }
+        else
+        {
+            MKMapItem *item = [[response mapItems] firstObject];
             
-            destinationPlacemark = [placemarks firstObject];
+            CLLocationCoordinate2D sourceCoordinate = self.mapView.userLocation.location.coordinate;
+            CLLocationCoordinate2D destinationCoordinate = item.placemark.location.coordinate;
             
-            NSLog(@"Geocoded address to {%f,%f} - {%f,%f}", [sourcePlacemark location].coordinate.latitude, [sourcePlacemark location].coordinate.longitude, [destinationPlacemark location].coordinate.latitude, [destinationPlacemark location].coordinate.longitude);
+            NSLog(@"Began routing from {%f,%f} to {%f,%f}", sourceCoordinate.latitude, sourceCoordinate.longitude, destinationCoordinate.latitude, destinationCoordinate.longitude);
             
             // stop map view from updating user location
             self.mapView.showsUserLocation = NO;
             
-            self.navigationKit = [[NavigationKit alloc] initWithSource:[sourcePlacemark location].coordinate destination:[destinationPlacemark location].coordinate transportType:MKDirectionsTransportTypeAutomobile directionsService:NavigationKitDirectionsServiceAppleMaps];
+            self.navigationKit = [[NavigationKit alloc] initWithSource:sourceCoordinate destination:destinationCoordinate transportType:MKDirectionsTransportTypeAutomobile directionsService:NavigationKitDirectionsServiceAppleMaps];
             [self.navigationKit setDelegate:self];
             
             [self.navigationKit calculateDirections];
-        }];
+        }
     }];
 }
 
