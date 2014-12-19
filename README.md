@@ -1,8 +1,11 @@
 NavigationKit
 =============
-Turn-by-Turn driving directions using Apple Directions API.
 
-Modified by Tony Borner (tonyunreal) .
+![Project Icon](http://i900.photobucket.com/albums/ac203/tonyunreal/car.png)
+
+A Turn-by-Turn driving directions library created with Apple Maps API.
+
+Forked and improved by Tony Borner (tonyunreal) .
 
 Summary
 -------
