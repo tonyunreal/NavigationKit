@@ -10,9 +10,13 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import "NavigationKit.h"
 #import "WGS84TOGCJ02.h"
 
-@interface NKViewController () <AVSpeechSynthesizerDelegate>
+@interface NKViewController () <CLLocationManagerDelegate, NavigationKitDelegate, AVSpeechSynthesizerDelegate>
+
+@property (nonatomic, strong) CLLocationManager     *locationManager;
+@property (nonatomic, strong) NavigationKit         *navigationKit;
 
 @end
 
@@ -349,6 +353,8 @@
     [self.mapView removeAnnotations:self.mapView.annotations];
     [self.mapView addAnnotation:annotation];
 }
+
+#pragma mark - AVSpeechSynthesizerDelegate
 
 -(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance
 {

@@ -9,12 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 
-#import "NavigationKit.h"
-
-@interface NKViewController : UIViewController <UITextFieldDelegate, MKMapViewDelegate, CLLocationManagerDelegate, NavigationKitDelegate>
-
-@property (nonatomic, strong) CLLocationManager     *locationManager;
-@property (nonatomic, strong) NavigationKit         *navigationKit;
+@interface NKViewController : UIViewController <UITextFieldDelegate, MKMapViewDelegate>
 
 @property (nonatomic, weak) IBOutlet MKMapView      *mapView;
 
