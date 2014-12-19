@@ -17,10 +17,10 @@
 		6003F5A4195388D20070C39A /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5A2195388D20070C39A /* Main_iPad.storyboard */; };
 		6003F5A7195388D20070C39A /* NKViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6003F5A6195388D20070C39A /* NKViewController.m */; };
 		6003F5A9195388D20070C39A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6003F5A8195388D20070C39A /* Images.xcassets */; };
-		B49E510B1A43BFDA001D6838 /* NavigationKit.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51061A43BFDA001D6838 /* NavigationKit.m */; };
-		B49E510C1A43BFDA001D6838 /* NKRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51081A43BFDA001D6838 /* NKRoute.m */; };
-		B49E510D1A43BFDA001D6838 /* NKRouteStep.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E510A1A43BFDA001D6838 /* NKRouteStep.m */; };
-		B49E51101A43C004001D6838 /* CKGeometryUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E510F1A43C004001D6838 /* CKGeometryUtility.m */; };
+		B49E511A1A43C5C9001D6838 /* CKGeometryUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51131A43C5C9001D6838 /* CKGeometryUtility.m */; };
+		B49E511B1A43C5C9001D6838 /* NavigationKit.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51151A43C5C9001D6838 /* NavigationKit.m */; };
+		B49E511C1A43C5C9001D6838 /* NKRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51171A43C5C9001D6838 /* NKRoute.m */; };
+		B49E511D1A43C5C9001D6838 /* NKRouteStep.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51191A43C5C9001D6838 /* NKRouteStep.m */; };
 		DF2487201A3EF54300CFB98F /* fork-left@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487101A3EF54300CFB98F /* fork-left@2x.png */; };
 		DF2487211A3EF54300CFB98F /* fork-right@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487111A3EF54300CFB98F /* fork-right@2x.png */; };
 		DF2487221A3EF54300CFB98F /* merge@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487121A3EF54300CFB98F /* merge@2x.png */; };
@@ -55,14 +55,14 @@
 		6003F5A5195388D20070C39A /* NKViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NKViewController.h; sourceTree = "<group>"; };
 		6003F5A6195388D20070C39A /* NKViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NKViewController.m; sourceTree = "<group>"; };
 		6003F5A8195388D20070C39A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		B49E51051A43BFDA001D6838 /* NavigationKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NavigationKit.h; path = ../../Pod/Classes/NavigationKit.h; sourceTree = "<group>"; };
-		B49E51061A43BFDA001D6838 /* NavigationKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NavigationKit.m; path = ../../Pod/Classes/NavigationKit.m; sourceTree = "<group>"; };
-		B49E51071A43BFDA001D6838 /* NKRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NKRoute.h; path = ../../Pod/Classes/NKRoute.h; sourceTree = "<group>"; };
-		B49E51081A43BFDA001D6838 /* NKRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRoute.m; path = ../../Pod/Classes/NKRoute.m; sourceTree = "<group>"; };
-		B49E51091A43BFDA001D6838 /* NKRouteStep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NKRouteStep.h; path = ../../Pod/Classes/NKRouteStep.h; sourceTree = "<group>"; };
-		B49E510A1A43BFDA001D6838 /* NKRouteStep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRouteStep.m; path = ../../Pod/Classes/NKRouteStep.m; sourceTree = "<group>"; };
-		B49E510E1A43C004001D6838 /* CKGeometryUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CKGeometryUtility.h; sourceTree = "<group>"; };
-		B49E510F1A43C004001D6838 /* CKGeometryUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CKGeometryUtility.m; sourceTree = "<group>"; };
+		B49E51121A43C5C9001D6838 /* CKGeometryUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CKGeometryUtility.h; path = ../../NavigationKit/CKGeometryUtility.h; sourceTree = "<group>"; };
+		B49E51131A43C5C9001D6838 /* CKGeometryUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CKGeometryUtility.m; path = ../../NavigationKit/CKGeometryUtility.m; sourceTree = "<group>"; };
+		B49E51141A43C5C9001D6838 /* NavigationKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NavigationKit.h; path = ../../NavigationKit/NavigationKit.h; sourceTree = "<group>"; };
+		B49E51151A43C5C9001D6838 /* NavigationKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NavigationKit.m; path = ../../NavigationKit/NavigationKit.m; sourceTree = "<group>"; };
+		B49E51161A43C5C9001D6838 /* NKRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NKRoute.h; path = ../../NavigationKit/NKRoute.h; sourceTree = "<group>"; };
+		B49E51171A43C5C9001D6838 /* NKRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRoute.m; path = ../../NavigationKit/NKRoute.m; sourceTree = "<group>"; };
+		B49E51181A43C5C9001D6838 /* NKRouteStep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NKRouteStep.h; path = ../../NavigationKit/NKRouteStep.h; sourceTree = "<group>"; };
+		B49E51191A43C5C9001D6838 /* NKRouteStep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRouteStep.m; path = ../../NavigationKit/NKRouteStep.m; sourceTree = "<group>"; };
 		DF2487101A3EF54300CFB98F /* fork-left@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fork-left@2x.png"; sourceTree = "<group>"; };
 		DF2487111A3EF54300CFB98F /* fork-right@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fork-right@2x.png"; sourceTree = "<group>"; };
 		DF2487121A3EF54300CFB98F /* merge@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "merge@2x.png"; sourceTree = "<group>"; };
@@ -125,22 +125,15 @@
 		6003F593195388D20070C39A /* NavigationKit */ = {
 			isa = PBXGroup;
 			children = (
+				B49E51111A43C5BF001D6838 /* NavigationKit */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
-				B49E51051A43BFDA001D6838 /* NavigationKit.h */,
-				B49E51061A43BFDA001D6838 /* NavigationKit.m */,
-				B49E51071A43BFDA001D6838 /* NKRoute.h */,
-				B49E51081A43BFDA001D6838 /* NKRoute.m */,
-				B49E51091A43BFDA001D6838 /* NKRouteStep.h */,
-				B49E510A1A43BFDA001D6838 /* NKRouteStep.m */,
 				6003F59C195388D20070C39A /* NKAppDelegate.h */,
 				6003F59D195388D20070C39A /* NKAppDelegate.m */,
 				6003F59F195388D20070C39A /* Main_iPhone.storyboard */,
 				6003F5A2195388D20070C39A /* Main_iPad.storyboard */,
 				6003F5A5195388D20070C39A /* NKViewController.h */,
 				6003F5A6195388D20070C39A /* NKViewController.m */,
-				B49E510E1A43C004001D6838 /* CKGeometryUtility.h */,
-				B49E510F1A43C004001D6838 /* CKGeometryUtility.m */,
 			);
 			path = NavigationKit;
 			sourceTree = "<group>";
@@ -155,6 +148,21 @@
 				6003F59B195388D20070C39A /* NavigationKit-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		B49E51111A43C5BF001D6838 /* NavigationKit */ = {
+			isa = PBXGroup;
+			children = (
+				B49E51121A43C5C9001D6838 /* CKGeometryUtility.h */,
+				B49E51131A43C5C9001D6838 /* CKGeometryUtility.m */,
+				B49E51141A43C5C9001D6838 /* NavigationKit.h */,
+				B49E51151A43C5C9001D6838 /* NavigationKit.m */,
+				B49E51161A43C5C9001D6838 /* NKRoute.h */,
+				B49E51171A43C5C9001D6838 /* NKRoute.m */,
+				B49E51181A43C5C9001D6838 /* NKRouteStep.h */,
+				B49E51191A43C5C9001D6838 /* NKRouteStep.m */,
+			);
+			name = NavigationKit;
 			sourceTree = "<group>";
 		};
 		DF24870F1A3EF54300CFB98F /* Maneuver Icons */ = {
@@ -263,12 +271,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B49E511A1A43C5C9001D6838 /* CKGeometryUtility.m in Sources */,
+				B49E511B1A43C5C9001D6838 /* NavigationKit.m in Sources */,
+				B49E511C1A43C5C9001D6838 /* NKRoute.m in Sources */,
+				B49E511D1A43C5C9001D6838 /* NKRouteStep.m in Sources */,
 				6003F59E195388D20070C39A /* NKAppDelegate.m in Sources */,
-				B49E510C1A43BFDA001D6838 /* NKRoute.m in Sources */,
-				B49E51101A43C004001D6838 /* CKGeometryUtility.m in Sources */,
-				B49E510D1A43BFDA001D6838 /* NKRouteStep.m in Sources */,
 				6003F5A7195388D20070C39A /* NKViewController.m in Sources */,
-				B49E510B1A43BFDA001D6838 /* NavigationKit.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
