@@ -9,9 +9,10 @@
 #import "NKViewController.h"
 
 #import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import "WGS84TOGCJ02.h"
 
-@interface NKViewController ()
+@interface NKViewController () <AVSpeechSynthesizerDelegate>
 
 @end
 
@@ -28,6 +29,11 @@
 	
     [self.sourceTextField setAttributedPlaceholder:[[NSAttributedString alloc] initWithString:self.sourceTextField.placeholder attributes:@{NSForegroundColorAttributeName: [[UIColor whiteColor] colorWithAlphaComponent:0.6]}]];
     [self.destinationTextField setAttributedPlaceholder:[[NSAttributedString alloc] initWithString:self.destinationTextField.placeholder attributes:@{NSForegroundColorAttributeName: [[UIColor whiteColor] colorWithAlphaComponent:0.6]}]];
+
+    // default audio session (media playback no music volume duck)
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:NULL];
+    [session setActive:YES error:NULL];
 }
 
 - (void)didReceiveMemoryWarning
@@ -283,12 +289,21 @@
     
     NSString *message = [NSString stringWithFormat:@"%@\u540E，%@", [self formatDistance:distance abbreviated:NO], [self sanitizedHTMLString:[step instructions]]];
     
+    // switching to a appropriate audio session for foreground playback
+    // ipod music should duck in volume but not be stopped
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setActive:NO error:NULL];
+    [session setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionDuckOthers error:NULL];
+    [session setActive:YES error:NULL];
+    
+    // play voice directions
     AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:message];
     utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:[[NSLocale currentLocale] localeIdentifier]];
     [utterance setRate:0.15];
     
     AVSpeechSynthesizer *speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
     [speechSynthesizer speakUtterance:utterance];
+    speechSynthesizer.delegate = self;
 }
 
 - (void)navigationKitCalculatedCamera:(MKMapCamera *)camera {
@@ -333,6 +348,15 @@
     annotation.title = @"Your Location";
     [self.mapView removeAnnotations:self.mapView.annotations];
     [self.mapView addAnnotation:annotation];
+}
+
+-(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didFinishSpeechUtterance:(AVSpeechUtterance *)utterance
+{
+    // after speech ended, switchs back to a normal audio session
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setActive:NO error:NULL];
+    [session setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:NULL];
+    [session setActive:YES error:NULL];
 }
 
 @end
