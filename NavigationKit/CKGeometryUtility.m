@@ -15,22 +15,22 @@
 {
     BOOL result = NO;
     
-    NSLog(@"%@, %f", location, tolerance);
+//    NSLog(@"%@, %f", location, tolerance);
     
-    // 循环检查所有点
+    // iterate over all points
     for(int i = 0; i < [path count]; i++)
     {
 
         CLLocationCoordinate2D coordinate = [[path objectAtIndex:i] MKCoordinateValue];
         
-        NSLog(@"%f, %f", coordinate.latitude, coordinate.longitude);
+//        NSLog(@"%f, %f", coordinate.latitude, coordinate.longitude);
         
-        // 检查是否在范围内
+        // check if location is within the tolerated area from that point
         CLLocation *targetLocation = [[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude];
         if ([location distanceFromLocation:targetLocation] <= tolerance)
         {
-            NSLog(@"%f is no greater than %f", [location distanceFromLocation:targetLocation], tolerance);
-            // 距离未超出tolerance，说明在路径上
+//            NSLog(@"%f is no greater than %f", [location distanceFromLocation:targetLocation], tolerance);
+            // distance is lesser than tolerance, location is on path
             result = YES;
             break;
         }
@@ -41,18 +41,18 @@
 
 +(CLLocationDirection)geometryHeadingFrom:(CLLocationCoordinate2D)from to:(CLLocationCoordinate2D)to
 {
-    // 计算横纵坐标差距
+    // calculate the horizontal/vertical delta from point A to point B
     CLLocationDistance deltaX = [[[CLLocation alloc] initWithLatitude:from.latitude longitude:from.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:from.latitude longitude:to.longitude]];
     CLLocationDistance deltaY = [[[CLLocation alloc] initWithLatitude:from.latitude longitude:from.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:to.latitude longitude:from.longitude]];
     
-    // 通过tan(heading) = x /y 计算出角度
+    // calculate the 0~90 angle with tan(heading) = x /y
     double heading = 0.0;
     if (deltaY != 0.0)
     {
         heading = atan(deltaX / deltaY) * 90.0 / M_PI_2;
     }
     
-    // 根据象限来修正heading
+    // convert the angle into full Cartesian system
     if (to.longitude > from.longitude && to.latitude < from.latitude)
     {
         heading = 180.0 - heading;
@@ -66,7 +66,7 @@
         heading = 360.0 - heading;
     }
     
-    NSLog(@"heading is %f", heading);
+    //NSLog(@"heading is %f", heading);
     
     return heading;
 }
