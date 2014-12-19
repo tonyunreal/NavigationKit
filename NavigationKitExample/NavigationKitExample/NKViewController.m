@@ -265,7 +265,7 @@
     
     AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:message];
     utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:[[NSLocale currentLocale] localeIdentifier]];
-    [utterance setRate:0.10];
+    [utterance setRate:0.15];
     
     AVSpeechSynthesizer *speechSynthesizer = [[AVSpeechSynthesizer alloc] init];
     [speechSynthesizer speakUtterance:utterance];
