@@ -16,9 +16,9 @@ Improvements over Original
 1. Removed dependancy on Google Maps (unavailable in China, and that the original implementation isn't perfectly based on GMS anyway).
 2. Switched to MKLocalSearch for better POI search results.
 3. UI Improvements to the example project.
-4. The library now takes current car heading direction into account when recalculating new routes.
+4. The library now takes current car heading direction into account when recalculating new routes. (Experimental)
 5. The example project now supports encrypted GCJ02 coordinates within China.
-6. The example project now utilizes proper background modes and audio sessions to allow playing voice directions while the app is running in the background or when the user is listening to music.
+6. The example project now utilizes proper background modes and audio sessions to allow playing voice directions while the app is running in the background or when the user is listening to music. (Experimental)
 
 License
 -------
