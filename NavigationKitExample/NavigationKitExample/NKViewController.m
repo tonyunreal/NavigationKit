@@ -9,6 +9,7 @@
 #import "NKViewController.h"
 
 #import <AVFoundation/AVFoundation.h>
+#import "WGS84TOGCJ02.h"
 
 @interface NKViewController ()
 
@@ -106,9 +107,9 @@
             
             CLLocationCoordinate2D sourceCoordinate = self.mapView.userLocation.location.coordinate;
             CLLocationCoordinate2D destinationCoordinate = item.placemark.location.coordinate;
-            
+
             NSLog(@"Began routing from {%f,%f} to {%f,%f}", sourceCoordinate.latitude, sourceCoordinate.longitude, destinationCoordinate.latitude, destinationCoordinate.longitude);
-            
+
             // stop map view from updating user location
             self.mapView.showsUserLocation = NO;
             
@@ -280,7 +281,7 @@
 - (void)navigationKitCalculatedNotificationForStep:(NKRouteStep *)step inDistance:(CLLocationDistance)distance {
     NSLog(@"NavigationKit Calculated Notification \"%@\" (in %f meters)", [step instructions], distance);
     
-    NSString *message = [NSString stringWithFormat:@"%@后，%@", [self formatDistance:distance abbreviated:NO], [self sanitizedHTMLString:[step instructions]]];
+    NSString *message = [NSString stringWithFormat:@"%@\u540E，%@", [self formatDistance:distance abbreviated:NO], [self sanitizedHTMLString:[step instructions]]];
     
     AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:message];
     utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:[[NSLocale currentLocale] localeIdentifier]];
@@ -298,12 +299,37 @@
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations {
     CLLocation *location = [locations firstObject];
+
+    // !!IMPORTANT!!
+    //
+    // ALL digital maps of regions within the People's Republic of China
+    // are encrypted with GCJ02 coordinates instead of WGS84 coordinates.
+    //
+    // To properly show a location or path on a Chinese map, we must first
+    // convert GPS coordinates into GCJ coordinates. This is done by using
+    // an open-source library called WGS84TOGCJ02.
+    //
+    // My version of this library automatically checks whether the coordinates
+    // are within China or not. So unless the user is driving across the
+    // Chinese border into or out of an adjacent country, our navigation
+    // example "should" be fine no matter which country the user is in.
+    //
+    // Another critial notice is that Apple Maps handles this encryption
+    // requirement automatically within Map Kit. So the only part we should
+    // take caution of is where we use Core Location instead of Map Kit.
+    //
+    // Notice that we didn't convert the coordinates when using self.mapView.
+    // userLocation or MKLocalSearch.
+    
+    CLLocationCoordinate2D realCoordinate = [WGS84TOGCJ02 transformFromWGSToGCJ:location.coordinate];
+    location = [[CLLocation alloc] initWithLatitude:realCoordinate.latitude longitude:realCoordinate.longitude];
+    
     [self.navigationKit calculateActionForLocation:location];
 
     // our own implementation of showing user location
     //MKPointAnnotation *annotation = [[MKPointAnnotation alloc] init];
     MKUserLocation *annotation = [[MKUserLocation alloc] init];
-    annotation.coordinate = location.coordinate;
+    annotation.coordinate = realCoordinate;
     annotation.title = @"Your Location";
     [self.mapView removeAnnotations:self.mapView.annotations];
     [self.mapView addAnnotation:annotation];

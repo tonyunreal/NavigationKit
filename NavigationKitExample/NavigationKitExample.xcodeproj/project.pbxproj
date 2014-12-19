@@ -21,6 +21,7 @@
 		B49E511B1A43C5C9001D6838 /* NavigationKit.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51151A43C5C9001D6838 /* NavigationKit.m */; };
 		B49E511C1A43C5C9001D6838 /* NKRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51171A43C5C9001D6838 /* NKRoute.m */; };
 		B49E511D1A43C5C9001D6838 /* NKRouteStep.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E51191A43C5C9001D6838 /* NKRouteStep.m */; };
+		B49E51201A43CDDA001D6838 /* WGS84TOGCJ02.m in Sources */ = {isa = PBXBuildFile; fileRef = B49E511F1A43CDDA001D6838 /* WGS84TOGCJ02.m */; };
 		DF2487201A3EF54300CFB98F /* fork-left@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487101A3EF54300CFB98F /* fork-left@2x.png */; };
 		DF2487211A3EF54300CFB98F /* fork-right@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487111A3EF54300CFB98F /* fork-right@2x.png */; };
 		DF2487221A3EF54300CFB98F /* merge@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DF2487121A3EF54300CFB98F /* merge@2x.png */; };
@@ -63,6 +64,8 @@
 		B49E51171A43C5C9001D6838 /* NKRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRoute.m; path = ../../NavigationKit/NKRoute.m; sourceTree = "<group>"; };
 		B49E51181A43C5C9001D6838 /* NKRouteStep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NKRouteStep.h; path = ../../NavigationKit/NKRouteStep.h; sourceTree = "<group>"; };
 		B49E51191A43C5C9001D6838 /* NKRouteStep.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NKRouteStep.m; path = ../../NavigationKit/NKRouteStep.m; sourceTree = "<group>"; };
+		B49E511E1A43CDDA001D6838 /* WGS84TOGCJ02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WGS84TOGCJ02.h; sourceTree = "<group>"; };
+		B49E511F1A43CDDA001D6838 /* WGS84TOGCJ02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WGS84TOGCJ02.m; sourceTree = "<group>"; };
 		DF2487101A3EF54300CFB98F /* fork-left@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fork-left@2x.png"; sourceTree = "<group>"; };
 		DF2487111A3EF54300CFB98F /* fork-right@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "fork-right@2x.png"; sourceTree = "<group>"; };
 		DF2487121A3EF54300CFB98F /* merge@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "merge@2x.png"; sourceTree = "<group>"; };
@@ -132,6 +135,8 @@
 				6003F59D195388D20070C39A /* NKAppDelegate.m */,
 				6003F59F195388D20070C39A /* Main_iPhone.storyboard */,
 				6003F5A2195388D20070C39A /* Main_iPad.storyboard */,
+				B49E511E1A43CDDA001D6838 /* WGS84TOGCJ02.h */,
+				B49E511F1A43CDDA001D6838 /* WGS84TOGCJ02.m */,
 				6003F5A5195388D20070C39A /* NKViewController.h */,
 				6003F5A6195388D20070C39A /* NKViewController.m */,
 			);
@@ -278,6 +283,7 @@
 				6003F59E195388D20070C39A /* NKAppDelegate.m in Sources */,
 				6003F5A7195388D20070C39A /* NKViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
+				B49E51201A43CDDA001D6838 /* WGS84TOGCJ02.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
