@@ -44,7 +44,7 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GF5-KK-rSq">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GF5-KK-rSq">
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
                                         <state key="normal">
                                             <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -111,7 +111,11 @@
                                     <constraint firstAttribute="trailing" secondItem="WC1-eS-eqs" secondAttribute="trailing" id="M4S-8T-hVj"/>
                                     <constraint firstAttribute="trailing" secondItem="uMW-JH-DV8" secondAttribute="trailing" constant="15" id="M7Z-Cs-Jli"/>
                                     <constraint firstItem="WC1-eS-eqs" firstAttribute="leading" secondItem="aM9-iM-5nh" secondAttribute="leading" id="Nmr-nN-9qF"/>
+                                    <constraint firstAttribute="bottom" secondItem="GF5-KK-rSq" secondAttribute="bottom" id="biC-BW-mm5"/>
+                                    <constraint firstAttribute="trailing" secondItem="GF5-KK-rSq" secondAttribute="trailing" id="epp-Ml-d42"/>
+                                    <constraint firstItem="GF5-KK-rSq" firstAttribute="leading" secondItem="aM9-iM-5nh" secondAttribute="leading" id="ioe-zg-6JQ"/>
                                     <constraint firstItem="uMW-JH-DV8" firstAttribute="top" secondItem="aM9-iM-5nh" secondAttribute="top" constant="25" id="x1h-Su-dHj"/>
+                                    <constraint firstItem="GF5-KK-rSq" firstAttribute="top" secondItem="aM9-iM-5nh" secondAttribute="top" id="ygJ-Ad-MkX"/>
                                 </constraints>
                             </view>
                         </subviews>
