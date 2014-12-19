@@ -124,9 +124,9 @@
         roundedDistance = [self roundedDistance:distance multiple:10];
     
     if(roundedDistance < 1000)
-        return [NSString stringWithFormat:@"%d %@", (int)roundedDistance, abbreviated ? @"m" : @"meters"];
+        return [NSString stringWithFormat:@"%d%@", (int)roundedDistance, abbreviated ? @"米" : @"米"];
     else
-        return [NSString stringWithFormat:@"%.01f %@", roundedDistance/1000, abbreviated ? @"km" : @"kilometers"];
+        return [NSString stringWithFormat:@"%.01f%@", roundedDistance/1000, abbreviated ? @"公里" : @"公里"];
 }
 
 - (NSString *)sanitizedHTMLString:(NSString *)string {
@@ -261,7 +261,7 @@
 - (void)navigationKitCalculatedNotificationForStep:(NKRouteStep *)step inDistance:(CLLocationDistance)distance {
     NSLog(@"NavigationKit Calculated Notification \"%@\" (in %f meters)", [step instructions], distance);
     
-    NSString *message = [NSString stringWithFormat:@"In %@, %@", [self formatDistance:distance abbreviated:NO], [self sanitizedHTMLString:[step instructions]]];
+    NSString *message = [NSString stringWithFormat:@"%@后，%@", [self formatDistance:distance abbreviated:NO], [self sanitizedHTMLString:[step instructions]]];
     
     AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:message];
     utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:[[NSLocale currentLocale] localeIdentifier]];
