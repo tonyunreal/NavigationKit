@@ -28,6 +28,7 @@
 @property (nonatomic) NSInteger currentStepInRoute;
 @property (nonatomic) CLLocationDistance distanceToEndOfPath;
 @property (nonatomic, strong) NSMutableArray *stepNotifications;
+@property (nonatomic) CLLocationDirection heading;
 
 @end
 
@@ -49,7 +50,12 @@
     return self;
 }
 
-- (void)calculateDirections {
+- (void)calculateDirections
+{
+    [self calculateDirectionsWithHeading:-1];
+}
+
+- (void)calculateDirectionsWithHeading:(CLLocationDirection)heading {
     _navigating = NO;
     _route = nil;
     _currentStepInRoute = 0;
@@ -58,7 +64,7 @@
     
     switch (_directionsService) {
         case NavigationKitDirectionsServiceAppleMaps:
-            [self calculateDirectionsAppleMaps];
+            [self calculateDirectionsAppleMapsWithHeading:heading];
             break;
         default:
         {
@@ -95,7 +101,7 @@
         [delegate navigationKitStartedRecalculation];
     
     [self stopNavigation];
-    [self calculateDirections];
+    [self calculateDirectionsWithHeading:_heading];
     [self startNavigation];
 }
 
@@ -196,7 +202,7 @@
 
 #pragma mark - The inner workings (Math, Algorithms, Easy)
 
-- (void)calculateDirectionsAppleMaps {
+- (void)calculateDirectionsAppleMapsWithHeading:(CLLocationDirection)heading {
     
     MKDirectionsRequest *directionsRequest = [[MKDirectionsRequest alloc] init];
     
@@ -206,6 +212,7 @@
     [directionsRequest setSource:[[MKMapItem alloc] initWithPlacemark:source]];
     [directionsRequest setDestination:[[MKMapItem alloc] initWithPlacemark:destination]];
     directionsRequest.transportType = _transportType;
+    directionsRequest.requestsAlternateRoutes = YES;
     
     MKDirections *directions = [[MKDirections alloc] initWithRequest:directionsRequest];
     
@@ -215,8 +222,78 @@
                 [delegate navigationKitError:error];
             return;
         }
-        
-        _route = [[NKRoute alloc] initWithMKRoute:response.routes.firstObject];
+
+        // Check multiple route and find the best one based on current heading
+        //
+        // Why? because being told constantly to turn around when driving
+        // is not fun. :-/
+        //
+        if (heading >= 0.0)
+        {
+            NKRoute *realRoute = nil;
+            for (MKRoute *route in response.routes)
+            {
+                // converts to NKRoute so we don't need to deal with C arrays
+                realRoute = [[NKRoute alloc] initWithMKRoute:route];
+                
+                // first two points from the route
+                NSUInteger pos1 = 0;
+                NSUInteger pos2 = 1;
+                CLLocationCoordinate2D point1 = [[realRoute.path objectAtIndex:pos1] MKCoordinateValue];
+                CLLocationCoordinate2D point2 = [[realRoute.path objectAtIndex:pos2] MKCoordinateValue];
+                
+                // check if the two points are too close
+                BOOL shouldSkipHeadingCheck = NO;
+                while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude]] < 15)
+                {
+                    // all paths are too short so it doesn't matter
+                    if ([realRoute.path count] <= pos2 + 1)
+                    {
+                        // no other steps
+                        shouldSkipHeadingCheck = YES;
+                        break;
+                    }
+                    else
+                    {
+                        // check next step
+                        point1 = [[realRoute.path objectAtIndex:++pos1] MKCoordinateValue];
+                        point2 = [[realRoute.path objectAtIndex:++pos2] MKCoordinateValue];
+                    }
+                }
+                
+                if (!shouldSkipHeadingCheck)
+                {
+                    // calculate heading from point1 to point2
+                    CLLocationDirection targetHeading = [CKGeometryUtility geometryHeadingFrom:point1 to:point2];
+                    
+                    // turning left or right is ok
+                    // turning more than 120 degrees is not
+                    double deltaHeading = fabs(targetHeading - heading);
+                    // deltaHeading should be 0~360
+                    if (deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0)
+                    {
+                        // turning more than 120 degrees, this path is not ok
+                        realRoute = nil;
+                    }
+                }
+            }
+            
+            if (!realRoute)
+            {
+                // no choice but to turn around, might as well take the first one
+                _route = [[NKRoute alloc] initWithMKRoute:[response.routes firstObject]];
+            }
+            else
+            {
+                // this one works the best because of no turning around
+                _route = realRoute;
+            }
+        }
+        else
+        {
+            // no heading preference
+            _route = [[NKRoute alloc] initWithMKRoute:[response.routes firstObject]];
+        }
         
         if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
             [delegate navigationKitCalculatedRoute:_route];
@@ -339,6 +416,7 @@
     [newCamera setCenterCoordinate:coordinateWithOffset];
     [newCamera setPitch:60];
     [newCamera setHeading:heading];
+    self.heading = heading;
     [newCamera setAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
     
     return newCamera;
