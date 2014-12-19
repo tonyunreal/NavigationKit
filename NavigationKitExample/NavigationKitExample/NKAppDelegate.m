@@ -7,12 +7,22 @@
 //
 
 #import "NKAppDelegate.h"
+#import <CoreLocation/CoreLocation.h>
 
 @implementation NKAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    if ([CLLocationManager locationServicesEnabled])
+    {
+        CLLocationManager *manager = [[CLLocationManager alloc] init];
+        if ([manager respondsToSelector:@selector(requestWhenInUseAuthorization)])
+        {
+            [manager requestWhenInUseAuthorization];
+        }
+    }
+    
     return YES;
 }
 							
