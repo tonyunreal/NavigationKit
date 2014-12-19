@@ -40,14 +40,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6003F58A195388D20070C39A /* NavigationKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NavigationKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6003F58A195388D20070C39A /* NavigationKitExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NavigationKitExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		6003F591195388D20070C39A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		6003F595195388D20070C39A /* NavigationKit-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NavigationKit-Info.plist"; sourceTree = "<group>"; };
+		6003F595195388D20070C39A /* NavigationKitExample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NavigationKitExample-Info.plist"; sourceTree = "<group>"; };
 		6003F597195388D20070C39A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		6003F599195388D20070C39A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		6003F59B195388D20070C39A /* NavigationKit-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NavigationKit-Prefix.pch"; sourceTree = "<group>"; };
+		6003F59B195388D20070C39A /* NavigationKitExample-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NavigationKitExample-Prefix.pch"; sourceTree = "<group>"; };
 		6003F59C195388D20070C39A /* NKAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NKAppDelegate.h; sourceTree = "<group>"; };
 		6003F59D195388D20070C39A /* NKAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NKAppDelegate.m; sourceTree = "<group>"; };
 		6003F5A0195388D20070C39A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPhone.storyboard; sourceTree = "<group>"; };
@@ -98,7 +98,7 @@
 		6003F581195388D10070C39A = {
 			isa = PBXGroup;
 			children = (
-				6003F593195388D20070C39A /* NavigationKit */,
+				6003F593195388D20070C39A /* NavigationKitExample */,
 				6003F58C195388D20070C39A /* Frameworks */,
 				6003F58B195388D20070C39A /* Products */,
 			);
@@ -107,7 +107,7 @@
 		6003F58B195388D20070C39A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6003F58A195388D20070C39A /* NavigationKit.app */,
+				6003F58A195388D20070C39A /* NavigationKitExample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -122,7 +122,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		6003F593195388D20070C39A /* NavigationKit */ = {
+		6003F593195388D20070C39A /* NavigationKitExample */ = {
 			isa = PBXGroup;
 			children = (
 				B49E51111A43C5BF001D6838 /* NavigationKit */,
@@ -135,17 +135,18 @@
 				6003F5A5195388D20070C39A /* NKViewController.h */,
 				6003F5A6195388D20070C39A /* NKViewController.m */,
 			);
-			path = NavigationKit;
+			name = NavigationKitExample;
+			path = NavigationKitExample;
 			sourceTree = "<group>";
 		};
 		6003F594195388D20070C39A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
 				DF24870F1A3EF54300CFB98F /* Maneuver Icons */,
-				6003F595195388D20070C39A /* NavigationKit-Info.plist */,
+				6003F595195388D20070C39A /* NavigationKitExample-Info.plist */,
 				6003F596195388D20070C39A /* InfoPlist.strings */,
 				6003F599195388D20070C39A /* main.m */,
-				6003F59B195388D20070C39A /* NavigationKit-Prefix.pch */,
+				6003F59B195388D20070C39A /* NavigationKitExample-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -191,9 +192,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6003F589195388D20070C39A /* NavigationKit */ = {
+		6003F589195388D20070C39A /* NavigationKitExample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "NavigationKit" */;
+			buildConfigurationList = 6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "NavigationKitExample" */;
 			buildPhases = (
 				6003F586195388D20070C39A /* Sources */,
 				6003F587195388D20070C39A /* Frameworks */,
@@ -203,9 +204,9 @@
 			);
 			dependencies = (
 			);
-			name = NavigationKit;
-			productName = NavigationKit;
-			productReference = 6003F58A195388D20070C39A /* NavigationKit.app */;
+			name = NavigationKitExample;
+			productName = NavigationKitExample;
+			productReference = 6003F58A195388D20070C39A /* NavigationKitExample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -218,7 +219,7 @@
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Axel Moller";
 			};
-			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "NavigationKit" */;
+			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "NavigationKitExample" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -231,7 +232,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6003F589195388D20070C39A /* NavigationKit */,
+				6003F589195388D20070C39A /* NavigationKitExample */,
 			);
 		};
 /* End PBXProject section */
@@ -389,9 +390,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "NavigationKit/NavigationKit-Prefix.pch";
-				INFOPLIST_FILE = "NavigationKit/NavigationKit-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "NavigationKitExample/NavigationKitExample-Prefix.pch";
+				INFOPLIST_FILE = "NavigationKitExample/NavigationKitExample-Info.plist";
+				PRODUCT_NAME = NavigationKitExample;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -402,9 +403,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "NavigationKit/NavigationKit-Prefix.pch";
-				INFOPLIST_FILE = "NavigationKit/NavigationKit-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GCC_PREFIX_HEADER = "NavigationKitExample/NavigationKitExample-Prefix.pch";
+				INFOPLIST_FILE = "NavigationKitExample/NavigationKitExample-Info.plist";
+				PRODUCT_NAME = NavigationKitExample;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -412,7 +413,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6003F585195388D10070C39A /* Build configuration list for PBXProject "NavigationKit" */ = {
+		6003F585195388D10070C39A /* Build configuration list for PBXProject "NavigationKitExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6003F5BD195388D20070C39A /* Debug */,
@@ -421,7 +422,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "NavigationKit" */ = {
+		6003F5BF195388D20070C39A /* Build configuration list for PBXNativeTarget "NavigationKitExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6003F5C0195388D20070C39A /* Debug */,
