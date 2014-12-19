@@ -8,6 +8,8 @@
 
 #import "NavigationKit.h"
 
+#import "CKGeometryUtility.h"
+
 #define NavigationKitErrorDomain @"com.navigationkit"
 
 @interface NavigationKit ()
@@ -57,9 +59,6 @@
     switch (_directionsService) {
         case NavigationKitDirectionsServiceAppleMaps:
             [self calculateDirectionsAppleMaps];
-            break;
-        case NavigationKitDirectionsServiceGoogleMaps:
-            [self calculateDirectionsGoogleMaps];
             break;
         default:
         {
@@ -113,7 +112,7 @@
     // Calculate wether the user is anywhere on the path returned from the directions service (i.e. on route)
     // The default tolerance is 50m
     // Recalculate navigation if user is off path
-    BOOL userOnPath = GMSGeometryIsLocationOnPathTolerance([location coordinate], _route.path, YES, _recalculatingTolerance == -1 ? 50 : _recalculatingTolerance);
+    BOOL userOnPath = [CKGeometryUtility isLocation:location onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 50 : _recalculatingTolerance];
     if(!userOnPath) {
         // Set source coordinate to the latest location
         _source = [location coordinate];
@@ -197,65 +196,6 @@
 
 #pragma mark - The inner workings (Math, Algorithms, Easy)
 
-- (void)calculateDirectionsGoogleMaps {
-    
-    NSString *mode = @"driving";
-    if(_transportType == MKDirectionsTransportTypeWalking)
-        mode = @"walking";
-    
-    NSString *requestURL = [NSString stringWithFormat:@"http://maps.googleapis.com/maps/api/directions/json?origin=%f,%f&destination=%f,%f&sensor=true&mode=%@&language=%@",
-                            _source.latitude,
-                            _source.longitude,
-                            _destination.latitude,
-                            _destination.longitude,
-                            mode,
-                            [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode]];
-    
-    NSURL *url = [NSURL URLWithString:[requestURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        
-        NSError *error = nil;
-        
-        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        if(error) {
-            if([delegate respondsToSelector:@selector(navigationKitError:)])
-                [delegate navigationKitError:error];
-            return;
-        }
-        
-        NSArray *routes = [result objectForKey:@"routes"];
-        if(!routes) {
-            if([delegate respondsToSelector:@selector(navigationKitError:)]) {
-                NSDictionary *userInfo = @{
-                                           NSLocalizedDescriptionKey: NSLocalizedString(@"Operation was unsuccessful.", nil),
-                                           NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Could not find any routes for specified locations", nil)
-                                           };
-                [delegate navigationKitError:[NSError errorWithDomain:NavigationKitErrorDomain code:-2 userInfo:userInfo]];
-            }
-            return;
-        }
-        
-        NSDictionary *route = [routes firstObject];
-        if(!route) {
-            if([delegate respondsToSelector:@selector(navigationKitError:)]) {
-                NSDictionary *userInfo = @{
-                                           NSLocalizedDescriptionKey: NSLocalizedString(@"Operation was unsuccessful.", nil),
-                                           NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Could not find any routes for specified locations", nil)
-                                           };
-                [delegate navigationKitError:[NSError errorWithDomain:NavigationKitErrorDomain code:-2 userInfo:userInfo]];
-            }
-            return;
-        }
-        
-        _route = [[NKRoute alloc] initWithGoogleMapsRoute:route];
-        
-        if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
-            [delegate navigationKitCalculatedRoute:_route];
-    }];
-}
-
 - (void)calculateDirectionsAppleMaps {
     
     MKDirectionsRequest *directionsRequest = [[MKDirectionsRequest alloc] init];
@@ -295,7 +235,7 @@
     
     for(int i = initialOffset; i < _route.steps.count; i++) {
         NKRouteStep *routeStep = [_route.steps objectAtIndex:i];
-        if(GMSGeometryIsLocationOnPathTolerance([location coordinate], [routeStep path], YES, 15)) {
+        if([CKGeometryUtility isLocation:location onPath:[routeStep path] tolerance:15]) {
             step = i;
             break;
         }
@@ -305,7 +245,7 @@
         return step;
     
     for(NKRouteStep *routeStep in _route.steps) {
-        if(GMSGeometryIsLocationOnPathTolerance([location coordinate], [routeStep path], YES, 15)) {
+        if([CKGeometryUtility isLocation:location onPath:[routeStep path] tolerance:15]) {
             step = (int)[_route.steps indexOfObject:routeStep];
             break;
         }
@@ -315,20 +255,20 @@
 }
 
 // Calculate the distance (meters) from a location to the last point in a route step
-- (CLLocationDistance)distanceToEndOfPath:(GMSPath *)path location:(CLLocation *)location {
+- (CLLocationDistance)distanceToEndOfPath:(NSArray *)path location:(CLLocation *)location {
     
     CLLocationDistance totalDistance = 0.0;
     
     // If it's a straight road, get the distance between me and the last point
     if([path count] == 2)
-        return [location distanceFromLocation:[self locationFromCoordinate:[path coordinateAtIndex:1]]];
+        return [location distanceFromLocation:[self locationFromCoordinate:[[path objectAtIndex:1] MKCoordinateValue]]];
     
     // Find the closest point
     CLLocationDistance smallestDistance = INT_MAX;
     int closestPoint = INT_MAX;
     
     for(int i = 0; i < [path count]; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[path coordinateAtIndex:i]] distanceFromLocation:location];
+        CLLocationDistance distance = [[self locationFromCoordinate:[[path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:location];
         if(distance < smallestDistance) {
             smallestDistance = distance;
             closestPoint = i;
@@ -340,7 +280,7 @@
         return smallestDistance;
     
     for(int i = closestPoint; i < [path count]-1; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[path coordinateAtIndex:i]] distanceFromLocation:[self locationFromCoordinate:[path coordinateAtIndex:i+1]]];
+        CLLocationDistance distance = [[self locationFromCoordinate:[[path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:[self locationFromCoordinate:[[path objectAtIndex:i+1] MKCoordinateValue]]];
         totalDistance += distance;
     }
     
@@ -366,7 +306,7 @@
     firstDistance = secondDistance = INT_MAX;
     
     for(i = 0; i < [step.path count]; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[step.path coordinateAtIndex:i]] distanceFromLocation:location];
+        CLLocationDistance distance = [[self locationFromCoordinate:[[step.path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:location];
         
         if(distance < firstDistance) {
             second = first;
@@ -390,7 +330,7 @@
     int secondOccurance = first < second ? second : first;
     
     // Get heading
-    CLLocationDirection heading = GMSGeometryHeading([step.path coordinateAtIndex:firstOccurance], [step.path coordinateAtIndex:secondOccurance]);
+    CLLocationDirection heading = [CKGeometryUtility geometryHeadingFrom:[[step.path objectAtIndex:firstOccurance] MKCoordinateValue] to:[[step.path objectAtIndex:secondOccurance] MKCoordinateValue]];
     
     CLLocationCoordinate2D coordinateWithOffset = [self coordinate:[location coordinate] atDistance:200 bearing:heading];
     

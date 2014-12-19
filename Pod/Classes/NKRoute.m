@@ -11,52 +11,13 @@
 
 @implementation NKRoute
 
-- (id)initWithGoogleMapsRoute:(NSDictionary *)route {
-    self = [super init];
-    
-    if(self && route) {
-        
-        // Decode the Path and convert coordinates to MKPolyline
-        NSString *encodedPolyline = [[route valueForKey:@"overview_polyline"] valueForKey:@"points"];
-        self.path = [GMSPath pathFromEncodedPath:encodedPolyline];
-        
-        CLLocationCoordinate2D *coordinates = calloc([self.path count], sizeof(CLLocationCoordinate2D));
-        
-        for(int i = 0; i < [self.path count]; i++) {
-            coordinates[i] = [self.path coordinateAtIndex:i];
-        }
-        
-        self.polyline = [MKPolyline polylineWithCoordinates:coordinates count:[self.path count]];
-        
-        free(coordinates);
-        
-        // Find all steps and convert to NKRouteStep's
-        NSDictionary *legs = [[route valueForKey:@"legs"] firstObject];
-        NSArray *steps =  [legs objectForKey:@"steps"];
-        
-        NSMutableArray *routeSteps = [[NSMutableArray alloc] init];
-        
-        for(NSDictionary *step in steps) {
-            NKRouteStep *routeStep = [[NKRouteStep alloc] initWithGoogleMapsStep:step];
-            [routeSteps addObject:routeStep];
-        }
-        
-        self.steps = routeSteps;
-        
-        // Find expectedTravelTime
-        self.expectedTravelTime = [[[legs valueForKey:@"duration"] valueForKey:@"value"] doubleValue];
-    }
-    
-    return self;
-}
-
 - (id)initWithMKRoute:(MKRoute *)route {
     self = [super init];
     
     if(self && route) {
         
         // Convert Polyline coordinates to GMSPath
-        GMSMutablePath *path = [[GMSMutablePath alloc] init];
+        NSMutableArray *path = [NSMutableArray arrayWithCapacity:[[route steps] count]];
         for(MKRouteStep *routeStep in [route steps]) {
             
             NSInteger stepPoints = routeStep.polyline.pointCount;
@@ -64,7 +25,7 @@
             [routeStep.polyline getCoordinates:coordinates range:NSMakeRange(0, stepPoints)];
             
             for(int i = 0; i < stepPoints; i++) {
-                [path addCoordinate:coordinates[i]];
+                [path addObject:[NSValue valueWithMKCoordinate:coordinates[i]]];
             }
         }
         

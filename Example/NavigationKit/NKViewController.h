@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 
-#import <NavigationKit/NavigationKit.h>
+#import "NavigationKit.h"
 
 @interface NKViewController : UIViewController <UITextFieldDelegate, MKMapViewDelegate, CLLocationManagerDelegate, NavigationKitDelegate>
 

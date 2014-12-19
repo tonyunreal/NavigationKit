@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import <MapKit/MapKit.h>
-#import <GoogleMaps/GoogleMaps.h>
 
 typedef NS_ENUM(NSInteger, NKRouteStepManeuver) {
     NKRouteStepManeuverUnknown,
@@ -37,7 +36,7 @@ typedef NS_ENUM(NSInteger, NKRouteStepManeuver) {
 
 @interface NKRouteStep : NSObject
 
-@property (nonatomic, strong) GMSPath *path;
+@property (nonatomic, strong) NSArray *path;
 @property (nonatomic, strong) MKPolyline *polyline;
 @property (nonatomic, strong) NSString *instructions;
 @property (nonatomic, strong) NSString *notice;
@@ -45,7 +44,6 @@ typedef NS_ENUM(NSInteger, NKRouteStepManeuver) {
 @property (nonatomic) MKDirectionsTransportType transportType;
 @property (nonatomic) NKRouteStepManeuver maneuver;
 
-- (id)initWithGoogleMapsStep:(NSDictionary *)step;
 - (id)initWithMKRouteStep:(MKRouteStep *)step;
 
 @end

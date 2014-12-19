@@ -8,14 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import <MapKit/MapKit.h>
-#import <GoogleMaps/GoogleMaps.h>
 
 #import "NKRoute.h"
 #import "NKRouteStep.h"
 
 typedef enum NavigationKitDirectionsService {
-    NavigationKitDirectionsServiceAppleMaps,
-    NavigationKitDirectionsServiceGoogleMaps
+    NavigationKitDirectionsServiceAppleMaps
 } NavigationKitDirectionsService;
 
 @protocol NavigationKitDelegate <NSObject>

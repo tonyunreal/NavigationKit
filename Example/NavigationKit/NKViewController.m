@@ -93,7 +93,7 @@
             
             NSLog(@"Geocoded address to {%f,%f} - {%f,%f}", [sourcePlacemark location].coordinate.latitude, [sourcePlacemark location].coordinate.longitude, [destinationPlacemark location].coordinate.latitude, [destinationPlacemark location].coordinate.longitude);
             
-            self.navigationKit = [[NavigationKit alloc] initWithSource:[sourcePlacemark location].coordinate destination:[destinationPlacemark location].coordinate transportType:MKDirectionsTransportTypeAutomobile directionsService:NavigationKitDirectionsServiceGoogleMaps];
+            self.navigationKit = [[NavigationKit alloc] initWithSource:[sourcePlacemark location].coordinate destination:[destinationPlacemark location].coordinate transportType:MKDirectionsTransportTypeAutomobile directionsService:NavigationKitDirectionsServiceAppleMaps];
             [self.navigationKit setDelegate:self];
             
             [self.navigationKit calculateDirections];
