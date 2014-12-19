@@ -14,6 +14,11 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    
+    // ui tint color
+    self.window.tintColor = [UIColor whiteColor];
+    
+    // ios 8 location privileges
     if ([CLLocationManager locationServicesEnabled])
     {
         CLLocationManager *manager = [[CLLocationManager alloc] init];
