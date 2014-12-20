@@ -225,31 +225,36 @@
             return;
         }
 
-        // Check multiple route and find the best one based on current heading
-        //
-        // Why? because being told constantly to turn around when driving
-        // is not fun. :-/
-        //
-        if (heading >= 0.0)
+        // both of these are NKRoute objects
+        NSMutableArray *allRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
+        NSMutableArray *noturnRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
+        for (MKRoute *route in response.routes)
         {
-            NKRoute *realRoute = nil;
-            for (MKRoute *route in response.routes)
+            // converts to NKRoute so we don't need to deal with C arrays
+            NKRoute *nkRoute = [[NKRoute alloc] initWithMKRoute:route];
+            
+            // add nkRoute to all routes
+            [allRoutes addObject:nkRoute];
+            
+            // Check every route and find better ones based on current heading
+            //
+            // Why? because being told constantly to turn around when driving
+            // is not fun. :-/
+            //
+            if (heading >= 0.0)
             {
-                // converts to NKRoute so we don't need to deal with C arrays
-                realRoute = [[NKRoute alloc] initWithMKRoute:route];
-                
                 // first two points from the route
                 NSUInteger pos1 = 0;
                 NSUInteger pos2 = 1;
-                CLLocationCoordinate2D point1 = [[realRoute.path objectAtIndex:pos1] MKCoordinateValue];
-                CLLocationCoordinate2D point2 = [[realRoute.path objectAtIndex:pos2] MKCoordinateValue];
+                CLLocationCoordinate2D point1 = [[nkRoute.path objectAtIndex:pos1] MKCoordinateValue];
+                CLLocationCoordinate2D point2 = [[nkRoute.path objectAtIndex:pos2] MKCoordinateValue];
                 
                 // check if the two points are too close
                 BOOL shouldSkipHeadingCheck = NO;
                 while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point2.latitude longitude:point2.longitude]] < 15)
                 {
                     // all paths are too short so it doesn't matter
-                    if ([realRoute.path count] <= pos2 + 1)
+                    if ([nkRoute.path count] <= pos2 + 1)
                     {
                         // no other steps
                         shouldSkipHeadingCheck = YES;
@@ -258,8 +263,8 @@
                     else
                     {
                         // check next step
-                        point1 = [[realRoute.path objectAtIndex:++pos1] MKCoordinateValue];
-                        point2 = [[realRoute.path objectAtIndex:++pos2] MKCoordinateValue];
+                        point1 = [[nkRoute.path objectAtIndex:++pos1] MKCoordinateValue];
+                        point2 = [[nkRoute.path objectAtIndex:++pos2] MKCoordinateValue];
                     }
                 }
                 
@@ -275,27 +280,32 @@
                     if (deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0)
                     {
                         // turning more than 120 degrees, this path is not ok
-                        realRoute = nil;
+                        nkRoute = nil;
                     }
                 }
-            }
-            
-            if (!realRoute)
-            {
-                // no choice but to turn around, might as well take the first one
-                _route = [[NKRoute alloc] initWithMKRoute:[response.routes firstObject]];
-            }
-            else
-            {
-                // this one works the best because of no turning around
-                _route = realRoute;
-            }
+                
+                // adds this satisfying route as one of our options
+                if (nkRoute != nil)
+                {
+                    [noturnRoutes addObject:nkRoute];
+                }
+            } // end of if (heading)
         }
-        else
+        
+        if ([noturnRoutes count] > 0)
         {
-            // no heading preference
-            _route = [[NKRoute alloc] initWithMKRoute:[response.routes firstObject]];
+            // some routes don't involve turning around
+            // even if this could result in longer drive time
+            // this could still potentially be better
+            allRoutes = noturnRoutes;
         }
+        
+        // we still need to sort the routes by predicted travel time
+        //
+        // so the user wouldn't see stupid route that tells them to travel
+        // through a long path then turn around multiple times
+        //
+        _route = [[allRoutes sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"expectedTravelTime" ascending:YES]]] firstObject];
         
         if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
             [delegate navigationKitCalculatedRoute:_route];
