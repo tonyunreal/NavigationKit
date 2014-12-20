@@ -45,6 +45,7 @@
         _directionsService = directionsService;
         _recalculatingTolerance = -1;
         _cameraAltitude = -1;
+        _heading = -1;
     }
     
     return self;
@@ -82,6 +83,7 @@
 
 - (void)startNavigation {
     _navigating = YES;
+    _heading = -1;
     if([delegate respondsToSelector:@selector(navigationKitStartedNavigation)])
         [delegate navigationKitStartedNavigation];
     
@@ -244,7 +246,7 @@
                 
                 // check if the two points are too close
                 BOOL shouldSkipHeadingCheck = NO;
-                while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude]] < 15)
+                while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point2.latitude longitude:point2.longitude]] < 15)
                 {
                     // all paths are too short so it doesn't matter
                     if ([realRoute.path count] <= pos2 + 1)
@@ -416,7 +418,7 @@
     [newCamera setCenterCoordinate:coordinateWithOffset];
     [newCamera setPitch:60];
     [newCamera setHeading:heading];
-    self.heading = heading;
+    _heading = heading;
     [newCamera setAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
     
     return newCamera;
