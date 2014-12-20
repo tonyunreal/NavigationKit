@@ -347,11 +347,28 @@
 
     // our own implementation of showing user location
     //MKPointAnnotation *annotation = [[MKPointAnnotation alloc] init];
-    MKUserLocation *annotation = [[MKUserLocation alloc] init];
-    annotation.coordinate = realCoordinate;
-    annotation.title = @"Your Location";
-    [self.mapView removeAnnotations:self.mapView.annotations];
-    [self.mapView addAnnotation:annotation];
+    MKUserLocation *annotationForUserLocation = [[MKUserLocation alloc] init];
+    annotationForUserLocation.coordinate = realCoordinate;
+    annotationForUserLocation.title = @"Your Location";
+    [self.mapView addAnnotation:annotationForUserLocation];
+
+    // pretty awkward way to remove the blue dot from its old location
+    NSMutableArray *annotationToBeRemoved = [NSMutableArray arrayWithCapacity:1];
+    for (id<MKAnnotation> annotation in self.mapView.annotations)
+    {
+        if ([annotation isKindOfClass:[MKUserLocation class]])
+        {
+            MKUserLocation *userLocation = (MKUserLocation *)annotation;
+            if (userLocation.coordinate.latitude != annotationForUserLocation.coordinate.latitude || userLocation.coordinate.longitude != annotationForUserLocation.coordinate.longitude)
+            {
+                [annotationToBeRemoved addObject:userLocation];
+            }
+        }
+    }
+    if ([annotationToBeRemoved count] > 0)
+    {
+        [self.mapView removeAnnotations:annotationToBeRemoved];
+    }
 }
 
 #pragma mark - AVSpeechSynthesizerDelegate
