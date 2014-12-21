@@ -241,7 +241,7 @@
     
     // Add Path to map
     [self.mapView addOverlay:[route polyline] level:MKOverlayLevelAboveRoads];
-    [self.mapView setVisibleMapRect:[[route polyline] boundingMapRect] edgePadding:UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0) animated:YES];
+    [self.mapView setVisibleMapRect:[[route polyline] boundingMapRect] edgePadding:UIEdgeInsetsMake(110.0, 10.0, 10.0, 10.0) animated:YES];
     
     // Hide address input fields
     [UIView animateWithDuration:0.5 animations:^{
