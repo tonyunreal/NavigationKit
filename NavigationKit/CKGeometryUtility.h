@@ -11,7 +11,7 @@
 
 @interface CKGeometryUtility : NSObject
 
-+(BOOL)isLocation:(CLLocation *)location onPath:(NSArray *)path tolerance:(CLLocationDistance)tolerance;
++(BOOL)isCoordinate:(CLLocationCoordinate2D)coordinate onPath:(NSArray *)path tolerance:(CLLocationDistance)tolerance;
 
 +(CLLocationDirection)geometryHeadingFrom:(CLLocationCoordinate2D)from to:(CLLocationCoordinate2D)to;
 

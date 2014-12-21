@@ -120,7 +120,7 @@
     // Calculate wether the user is anywhere on the path returned from the directions service (i.e. on route)
     // The default tolerance is 50m
     // Recalculate navigation if user is off path
-    BOOL userOnPath = [CKGeometryUtility isLocation:location onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 100 : _recalculatingTolerance];
+    BOOL userOnPath = [CKGeometryUtility isCoordinate:location.coordinate onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 100 : _recalculatingTolerance];
     if(!userOnPath) {
         // Set source coordinate to the latest location
         _source = [location coordinate];
@@ -324,7 +324,7 @@
     
     for(int i = initialOffset; i < _route.steps.count; i++) {
         NKRouteStep *routeStep = [_route.steps objectAtIndex:i];
-        if([CKGeometryUtility isLocation:location onPath:[routeStep path] tolerance:15]) {
+        if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
             step = i;
             break;
         }
@@ -334,7 +334,7 @@
         return step;
     
     for(NKRouteStep *routeStep in _route.steps) {
-        if([CKGeometryUtility isLocation:location onPath:[routeStep path] tolerance:15]) {
+        if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
             step = (int)[_route.steps indexOfObject:routeStep];
             break;
         }
