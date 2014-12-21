@@ -120,7 +120,7 @@
     // Calculate wether the user is anywhere on the path returned from the directions service (i.e. on route)
     // The default tolerance is 50m
     // Recalculate navigation if user is off path
-    BOOL userOnPath = [CKGeometryUtility isLocation:location onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 50 : _recalculatingTolerance];
+    BOOL userOnPath = [CKGeometryUtility isLocation:location onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 100 : _recalculatingTolerance];
     if(!userOnPath) {
         // Set source coordinate to the latest location
         _source = [location coordinate];

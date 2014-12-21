@@ -35,6 +35,11 @@
             break;
         }
     }
+    
+    if (!result && tolerance > 20.0)
+    {
+        NSLog(@"location {%.3f, %.3f} is more than %.1f far from path", location.coordinate.latitude, location.coordinate.longitude, tolerance);
+    }
 
     return result;
 }
