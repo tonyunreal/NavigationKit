@@ -38,6 +38,9 @@
     AVAudioSession *session = [AVAudioSession sharedInstance];
     [session setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:NULL];
     [session setActive:YES error:NULL];
+    
+    // start updating user location
+    self.mapView.showsUserLocation = YES;
 }
 
 - (void)didReceiveMemoryWarning
