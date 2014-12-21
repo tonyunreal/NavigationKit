@@ -17,6 +17,16 @@
     
 //    NSLog(@"%@, %f", location, tolerance);
     
+    if ([path count] == 1)
+    {
+        // check where the only point on path is far enough
+        CLLocationCoordinate2D coordinateX = [[path firstObject] MKCoordinateValue];
+        if ([[[CLLocation alloc] initWithLatitude:coordinateX.latitude longitude:coordinateX.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude]] <= tolerance)
+        {
+            return YES;
+        }
+    }
+    
     // iterate over all road paths
     for(int i = 0; i < [path count]-1; i++)
     {
@@ -24,21 +34,29 @@
         CLLocationCoordinate2D coordinate1 = [[path objectAtIndex:i] MKCoordinateValue];
         CLLocationCoordinate2D coordinate2 = [[path objectAtIndex:i+1] MKCoordinateValue];
         
+        // why is there duplicate coordinates?
+        if (coordinate1.latitude == coordinate2.latitude && coordinate1.longitude == coordinate2.longitude) continue;
+        
         // to find the nearest point to "location" on this road
         // we calculate the distance from coordinate to coordinate1 as d1
         // the angle between lines co1-co and co1-co2 as alpha1
-        // the angle between lines co-co2 and co1-co2 as alpha2
+        // the angle between lines co2-co and co2-co1 as alpha2
         // then we use trianglar function
         //
         // if alpha1 and alpha2 are both within 0~M_PI_2
         // then d = d1 * sin(alpha1)
         // if alpha1 is larger than M_PI_2 then co1 is the nearest point
         // if alpha2 is larger than M_PI_2 then co2 is the nearest point
-        CLLocationDegrees alpha1 = abs(atan2(coordinate.longitude - coordinate1.longitude, coordinate.latitude - coordinate1.latitude) - atan2(coordinate2.longitude - coordinate1.longitude, coordinate2.latitude - coordinate1.latitude));
-        CLLocationDegrees alpha2 = abs(atan2(coordinate2.longitude - coordinate.longitude, coordinate2.latitude - coordinate.latitude) - atan2(coordinate1.longitude - coordinate2.longitude, coordinate1.latitude - coordinate2.latitude));
-        // alpha1 and alpha2 should be converted from [0, M_2_PI] to [0, M_PI]
-        if (alpha1 > M_PI) alpha1 = M_2_PI - alpha1;
-        if (alpha2 > M_PI) alpha2 = M_2_PI - alpha2;
+        CLLocationDegrees alpha1 = fabs(atan2(coordinate.longitude - coordinate1.longitude, coordinate.latitude - coordinate1.latitude) - atan2(coordinate2.longitude - coordinate1.longitude, coordinate2.latitude - coordinate1.latitude));
+        CLLocationDegrees alpha2 = fabs(atan2(coordinate.longitude - coordinate2.longitude, coordinate.latitude - coordinate2.latitude) - atan2(coordinate1.longitude - coordinate2.longitude, coordinate1.latitude - coordinate2.latitude));
+        
+//        NSLog(@"alpha1 = %f, alpha2 = %f", alpha1, alpha2);
+
+        // alpha1 and alpha2 should be converted from [0, M_PI*2] to [0, M_PI]
+        if (alpha1 > M_PI) alpha1 = M_PI * 2.0 - alpha1;
+        if (alpha2 > M_PI) alpha2 = M_PI * 2.0 - alpha2;
+        
+//        NSLog(@"alpha1 = %f, alpha2 = %f", alpha1, alpha2);
         
         CLLocationDistance distance;
         if (alpha1 >= M_PI_2)
@@ -57,11 +75,14 @@
         // check if location is within the tolerated area from that point
         if (distance <= tolerance)
         {
-//            NSLog(@"%f is no greater than %f", d, tolerance);
+            //NSLog(@"path {%f, %f} - {%f, %f}, location {%f, %f}", coordinate1.latitude, coordinate1.longitude, coordinate2.latitude, coordinate2.longitude, coordinate.latitude, coordinate.longitude);
+            //NSLog(@"{%f, %f, %f}", [[[CLLocation alloc] initWithLatitude:coordinate1.latitude longitude:coordinate1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude]], [[[CLLocation alloc] initWithLatitude:coordinate2.latitude longitude:coordinate2.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:coordinate.latitude longitude:coordinate.longitude]], [[[CLLocation alloc] initWithLatitude:coordinate1.latitude longitude:coordinate1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:coordinate2.latitude longitude:coordinate2.longitude]]);
+            //NSLog(@"%f is no greater than %f", distance, tolerance);
             // distance is lesser than tolerance, location is on path
             result = YES;
             break;
         }
+        //NSLog(@"%f is too far than %f", distance, tolerance);
     }
     
     if (!result && tolerance > 20.0)

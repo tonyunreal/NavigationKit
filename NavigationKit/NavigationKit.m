@@ -130,6 +130,7 @@
     // Calculate which step we are on the path
     // Initially ignore steps that we have already "seen", but if a step was not found then, iterate through all steps in route
     int currentStep = [self stepForLocation:location initialOffset:(int)_currentStepInRoute];
+    NSLog(@"current step = %d", currentStep);
     
     // We are on step 'currentStep', but we want to animate and display information about the next step
     int nextStep = [_route steps].count > currentStep ? currentStep+1 : currentStep;
@@ -324,6 +325,7 @@
     
     for(int i = initialOffset; i < _route.steps.count; i++) {
         NKRouteStep *routeStep = [_route.steps objectAtIndex:i];
+        NSLog(@"step %d", i);
         if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
             step = i;
             break;
@@ -334,6 +336,7 @@
         return step;
     
     for(NKRouteStep *routeStep in _route.steps) {
+        NSLog(@"step %d", (int)[_route.steps indexOfObject:routeStep]);
         if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
             step = (int)[_route.steps indexOfObject:routeStep];
             break;
