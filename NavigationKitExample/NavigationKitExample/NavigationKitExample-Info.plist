@@ -26,6 +26,11 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>NavigationKit displays Turn-by-Turn driving directions on a map</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>audio</string>
+	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main_iPhone</string>
 	<key>UIRequiredDeviceCapabilities</key>
