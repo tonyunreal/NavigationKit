@@ -157,9 +157,9 @@
         roundedDistance = [self roundedDistance:distance multiple:10];
     
     if(roundedDistance < 1000)
-        return [NSString stringWithFormat:@"%d%@", (int)roundedDistance, abbreviated ? @"米" : @"米"];
+        return [NSString stringWithFormat:@"%d%@", (int)roundedDistance, abbreviated ? @"\u7C73" : @"\u7C73"];
     else
-        return [NSString stringWithFormat:@"%.01f%@", roundedDistance/1000, abbreviated ? @"公里" : @"公里"];
+        return [NSString stringWithFormat:@"%.01f%@", roundedDistance/1000, abbreviated ? @"\u516C\u91CC" : @"\u516C\u91CC"];
 }
 
 - (NSString *)sanitizedHTMLString:(NSString *)string {
