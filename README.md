@@ -18,10 +18,12 @@ Improvements over Original (Library)
 
 Improvements over Original (Example Project)
 --------------------------------------------
-1. Switched to MKLocalSearch for better POI search results.
-2. UI Improvements.
-3. Supports encrypted GCJ02 coordinates within China.
-4. Utilizes proper background modes and audio sessions to allow playing voice directions while the app is running in the background or when the user is listening to music.
+1. Removed dependancy on CocoaPods.
+2. Switched to MKLocalSearch for better POI search results.
+3. UI Improvements.
+4. Supports encrypted GCJ02 coordinates within China.
+5. Changed directions narrator to Chinese language while keeping every piece of the code moonspeak free. ;)
+6. Utilizes proper background modes and audio sessions to allow playing voice directions while the app is running in the background or when the user is listening to music.
 
 License
 -------
