@@ -107,12 +107,12 @@
     }
     
     // convert the angle into full Cartesian system
-    // somehow second and fourth quadrant is swapped, not sure why
+    // thoughts: somehow second and fourth quadrant is swapped, not sure why
     if (to.longitude > from.longitude && to.latitude <= from.latitude)
     {
         // second quadrant
-        //heading = 180.0 - heading;
-        heading = 360.0 - heading;
+        heading = 180.0 - heading;
+        //heading = 360.0 - heading;
     }
     else if (to.longitude <= from.longitude && to.latitude < from.latitude)
     {
@@ -122,8 +122,8 @@
     else if (to.longitude < from.longitude && to.latitude >= from.latitude)
     {
         // fourth quadrant
-        //heading = 360.0 - heading;
-        heading = 180.0 - heading;
+        heading = 360.0 - heading;
+        //heading = 180.0 - heading;
     }
     
     //NSLog(@"heading is %f", heading);
