@@ -27,6 +27,7 @@
 @property (nonatomic) BOOL navigating;
 @property (nonatomic) NSInteger currentStepInRoute;
 @property (nonatomic) CLLocationDistance distanceToEndOfPath;
+@property (nonatomic) CLLocationDistance distanceToEndOfRoute;
 @property (nonatomic, strong) NSMutableArray *stepNotifications;
 @property (nonatomic) CLLocationDirection heading;
 
@@ -61,6 +62,7 @@
     _route = nil;
     _currentStepInRoute = 0;
     _distanceToEndOfPath = 0;
+    _distanceToEndOfRoute = 0;
     _stepNotifications = [[NSMutableArray alloc] init];
     
     switch (_directionsService) {
@@ -133,7 +135,7 @@
     //NSLog(@"current step = %d", currentStep);
     
     // We are on step 'currentStep', but we want to animate and display information about the next step
-    int nextStep = [_route steps].count > currentStep ? currentStep+1 : currentStep;
+    int nextStep = [_route steps].count - 1 > currentStep ? currentStep + 1 : currentStep;
     
     // We can not currently find which step we are on
     if(currentStep == INT_MAX)
@@ -147,7 +149,12 @@
         _distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
         [delegate navigationKitCalculatedDistanceToEndOfPath:_distanceToEndOfPath];
     }
-    
+
+    if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfRoute:)]) {
+        _distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
+        [delegate navigationKitCalculatedDistanceToEndOfRoute:_distanceToEndOfRoute];
+    }
+
     // Set the global variable 'currentStepInRoute' to 'currentStep' if updated
     // and notify delegate that text and voice instructions should be updated
     if(currentStep != _currentStepInRoute) {
@@ -175,13 +182,13 @@
     // OR if
     // Distance to end of path is less than or equal to 50m
     if([_stepNotifications indexOfObject:nextRouteStep] == NSNotFound) {
-        if(_distanceToEndOfPath <= 200.0 && currentRouteStep.distance >= 1000.0) {
+        if(_distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
                 [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:_distanceToEndOfPath];
             [_stepNotifications addObject:nextRouteStep];
             
-        } else if(_distanceToEndOfPath <= 50.0) {
+        } else if(_distanceToEndOfPath <= 150.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
                 [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:_distanceToEndOfPath];
@@ -201,6 +208,26 @@
         if(camera)
             [delegate navigationKitCalculatedCamera:camera];
     }
+}
+
+- (CLLocationDistance)distanceToEndOfRoute:(NKRouteStep *)curStep location:(CLLocation *)location {
+  CLLocationDistance totalDistance = [self distanceToEndOfPath:curStep.path location:location];
+  for (NSUInteger i = self.route.steps.count - 1; i > self.currentStepInRoute; i--) {
+    NKRouteStep *step = self.route.steps[i];
+    totalDistance += [self pathDistance:step.path];
+  }
+  return totalDistance;
+}
+
+- (CLLocationDistance)pathDistance:(NSArray *)path {
+  CLLocationDistance totalDistance = 0;
+  for(NSUInteger i = 0; i < path.count - 1; i++) {
+    CLLocationDistance distance = [[self locationFromCoordinate:[path[i] MKCoordinateValue]]
+        distanceFromLocation:[self locationFromCoordinate:[path[i + 1] MKCoordinateValue]]];
+    totalDistance += distance;
+  }
+
+  return totalDistance;
 }
 
 #pragma mark - The inner workings (Math, Algorithms, Easy)
@@ -385,7 +412,11 @@
 
 // The Default camera (for step 0, where we don't really have a heading yet)
 - (MKMapCamera *)defaultCamera:(CLLocation *)location {
-    return [MKMapCamera cameraLookingAtCenterCoordinate:[location coordinate] fromEyeCoordinate:[location coordinate] eyeAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
+  MKMapCamera *camera = [MKMapCamera cameraLookingAtCenterCoordinate:[location coordinate]
+                                                   fromEyeCoordinate:[location coordinate]
+                                                         eyeAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
+  camera.heading = location.course;
+  return camera;
 }
 
 // Calculate the camera based on the users settings
@@ -398,7 +429,7 @@
     firstDistance = secondDistance = INT_MAX;
     
     for(i = 0; i < [step.path count]; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[[step.path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:location];
+        CLLocationDistance distance = [[self locationFromCoordinate:[step.path[i] MKCoordinateValue]] distanceFromLocation:location];
         
         if(distance < firstDistance) {
             second = first;
@@ -416,15 +447,11 @@
     // return null if we failed to find locations
     if(first == INT_MAX || second == INT_MAX)
         return nil;
-    
-    // Sort it so we calculate heading based on points in order, regardless of which one is closest
-    int firstOccurance = first < second ? first : second;
-    int secondOccurance = first < second ? second : first;
-    
+
     // Get heading
-    CLLocationDirection heading = [CKGeometryUtility geometryHeadingFrom:[[step.path objectAtIndex:firstOccurance] MKCoordinateValue] to:[[step.path objectAtIndex:secondOccurance] MKCoordinateValue]];
-    
-    CLLocationCoordinate2D coordinateWithOffset = [self coordinate:[location coordinate] atDistance:200 bearing:heading];
+    CLLocationDirection heading = location.course;
+    CLLocationCoordinate2D coordinateWithOffset = [NavigationKit coordinate:[location coordinate] atDistance:200
+                                                                    bearing:heading];
     
     MKMapCamera *newCamera = [MKMapCamera camera];
     
@@ -437,16 +464,17 @@
     return newCamera;
 }
 
-- (double)radiansFromDegrees:(double)degrees {
++ (double)radiansFromDegrees:(double)degrees {
     return degrees * (M_PI / 180.0);
 }
 
-- (double)degreesFromRadians:(double)radians {
++ (double)degreesFromRadians:(double)radians {
     return radians * (180.0 / M_PI);
 }
 
 // Calculate a CLLocationCoordinate2D at n meters ahead of a location with bearing
-- (CLLocationCoordinate2D)coordinate:(CLLocationCoordinate2D)fromCoordinate atDistance:(double)distance bearing:(double)bearing {
++ (CLLocationCoordinate2D)coordinate:(CLLocationCoordinate2D)fromCoordinate atDistance:(double)distance bearing:
+    (double)bearing {
     
     double distanceRadians = (distance / 1000) / 6371.0; // 6371 is the earths radius in km
     double bearingRadians = [self radiansFromDegrees:bearing];

@@ -23,6 +23,7 @@ typedef enum NavigationKitDirectionsService {
 - (void)navigationKitStartedNavigation;
 - (void)navigationKitEnteredRouteStep:(NKRouteStep *)step nextStep:(NKRouteStep *)nextStep;
 - (void)navigationKitCalculatedDistanceToEndOfPath:(CLLocationDistance)distance;
+- (void)navigationKitCalculatedDistanceToEndOfRoute:(CLLocationDistance)distance;
 - (void)navigationKitCalculatedNotificationForStep:(NKRouteStep *)step inDistance:(CLLocationDistance)distance;
 - (void)navigationKitCalculatedCamera:(MKMapCamera *)camera;
 - (void)navigationKitStartedRecalculation;
@@ -49,5 +50,6 @@ typedef enum NavigationKitDirectionsService {
 - (BOOL)isNavigating;
 
 - (void)calculateActionForLocation:(CLLocation *)location;
-
++ (CLLocationCoordinate2D)coordinate:(CLLocationCoordinate2D)fromCoordinate atDistance:(double)distance bearing:
+    (double)bearing;
 @end

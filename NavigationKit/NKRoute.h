@@ -17,6 +17,8 @@
 @property (nonatomic, strong) NSArray *steps;
 @property (nonatomic) NSTimeInterval expectedTravelTime;
 
+@property (nonatomic) CLLocationDistance distance;
+
 - (id)initWithMKRoute:(MKRoute *)route;
 
 @end
