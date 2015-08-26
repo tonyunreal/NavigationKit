@@ -31,10 +31,12 @@
 @property (nonatomic, strong) NSMutableArray *stepNotifications;
 @property (nonatomic) CLLocationDirection heading;
 
+@property (nonatomic, strong) NSDate *lastCalculatedDate;
 @end
 
 @implementation NavigationKit
 @synthesize delegate;
+static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 - (id)initWithSource:(CLLocationCoordinate2D)source destination:(CLLocationCoordinate2D)destination transportType:(MKDirectionsTransportType)transportType directionsService:(NavigationKitDirectionsService)directionsService {
     self = [super init];
@@ -64,6 +66,7 @@
     _distanceToEndOfPath = 0;
     _distanceToEndOfRoute = 0;
     _stepNotifications = [[NSMutableArray alloc] init];
+    self.lastCalculatedDate = [NSDate date];
     
     switch (_directionsService) {
         case NavigationKitDirectionsServiceAppleMaps:
@@ -101,6 +104,8 @@
 }
 
 - (void)recalculateNavigation {
+    if ([[NSDate date] timeIntervalSinceDate:self.lastCalculatedDate] < kMinTimeBetweenRecalculations) return;
+
     if([delegate respondsToSelector:@selector(navigationKitStartedRecalculation)])
         [delegate navigationKitStartedRecalculation];
     
