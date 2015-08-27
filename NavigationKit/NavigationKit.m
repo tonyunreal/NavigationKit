@@ -183,18 +183,18 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // Total distance of path is more than or equal to 1000m AND
     // OR if
     // Distance to end of path is less than or equal to 50m
-    if([self.stepNotifications indexOfObject:nextRouteStep] == NSNotFound) {
+    if([self.stepNotifications indexOfObject:currentRouteStep] == NSNotFound) {
         if(self.distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:self.distanceToEndOfPath];
-            [self.stepNotifications addObject:nextRouteStep];
+                [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
+            [self.stepNotifications addObject:currentRouteStep];
             
         } else if(self.distanceToEndOfPath <= 150.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:self.distanceToEndOfPath];
-            [self.stepNotifications addObject:nextRouteStep];
+                [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
+            [self.stepNotifications addObject:currentRouteStep];
             
         }
     }
