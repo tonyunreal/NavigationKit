@@ -60,14 +60,14 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 - (void)calculateDirectionsWithHeading:(CLLocationDirection)heading {
     self.isNavigating = NO;
-    _route = nil;
-    _currentStepInRoute = 0;
-    _distanceToEndOfPath = 0;
-    _distanceToEndOfRoute = 0;
-    _stepNotifications = [[NSMutableArray alloc] init];
+    self.route = nil;
+    self.currentStepInRoute = 0;
+    self.distanceToEndOfPath = 0;
+    self.distanceToEndOfRoute = 0;
+    self.stepNotifications = [[NSMutableArray alloc] init];
     self.lastCalculatedDate = [NSDate date];
     
-    switch (_directionsService) {
+    switch (self.directionsService) {
         case NavigationKitDirectionsServiceAppleMaps:
             [self calculateDirectionsAppleMapsWithHeading:heading];
             break;
@@ -87,13 +87,15 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 - (void)startNavigation {
     self.isNavigating = YES;
-    _heading = -1;
+    self.heading = -1;
     if([delegate respondsToSelector:@selector(navigationKitStartedNavigation)])
         [delegate navigationKitStartedNavigation];
     
     // This might be a temporary fix, but for now, notify the delegate that we entered step "0"
-    if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)])
-        [delegate navigationKitEnteredRouteStep:[_route.steps objectAtIndex:0] nextStep:[_route.steps objectAtIndex:1]];
+    if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)]) {
+      NKRouteStep *firstStep = (self.route.steps.count >= 2) ? self.route.steps[1] : self.route.steps[0];
+      [delegate navigationKitEnteredRouteStep:firstStep nextStep:self.route.steps[1]];
+    }
 }
 
 - (void)stopNavigation {
@@ -109,56 +111,56 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         [delegate navigationKitStartedRecalculation];
     
     [self stopNavigation];
-    [self calculateDirectionsWithHeading:_heading];
+    [self calculateDirectionsWithHeading:self.heading];
     [self startNavigation];
 }
 
 - (void)calculateActionForLocation:(CLLocation *)location {
     
     // If Turn-by-Turn navigation is not enabled, don't perform any calculations
-    if(!self.isNavigating || location == nil || _route == nil)
+    if(!self.isNavigating || location == nil || self.route == nil)
         return;
     
     // Calculate wether the user is anywhere on the path returned from the directions service (i.e. on route)
     // The default tolerance is 50m
     // Recalculate navigation if user is off path
-    BOOL userOnPath = [CKGeometryUtility isCoordinate:location.coordinate onPath:_route.path tolerance:_recalculatingTolerance == -1 ? 100 : _recalculatingTolerance];
+    BOOL userOnPath = [CKGeometryUtility isCoordinate:location.coordinate onPath:self.route.path tolerance:self.recalculatingTolerance == -1 ? 100 : self.recalculatingTolerance];
     if(!userOnPath) {
         // Set source coordinate to the latest location
-        _source = [location coordinate];
+        self.source = [location coordinate];
         return [self recalculateNavigation];
     }
     
     // Calculate which step we are on the path
     // Initially ignore steps that we have already "seen", but if a step was not found then, iterate through all steps in route
-    int currentStep = [self stepForLocation:location initialOffset:(int)_currentStepInRoute];
+    int currentStep = [self stepForLocation:location initialOffset:(int)self.currentStepInRoute];
     //NSLog(@"current step = %d", currentStep);
     
     // We are on step 'currentStep', but we want to animate and display information about the next step
-    int nextStep = [_route steps].count - 1 > currentStep ? currentStep + 1 : currentStep;
+    int nextStep = [self.route steps].count - 1 > currentStep ? currentStep + 1 : currentStep;
     
     // We can not currently find which step we are on
     if(currentStep == INT_MAX)
         return;
     
-    NKRouteStep *currentRouteStep = [_route.steps objectAtIndex:currentStep];
-    NKRouteStep *nextRouteStep = [_route.steps objectAtIndex:nextStep];
+    NKRouteStep *currentRouteStep = self.route.steps[currentStep];
+    NKRouteStep *nextRouteStep = self.route.steps[nextStep];
     
     // Calculate the driving distance to the end of the current path
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfPath:)]) {
-        _distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
-        [delegate navigationKitCalculatedDistanceToEndOfPath:_distanceToEndOfPath];
+        self.distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
+        [delegate navigationKitCalculatedDistanceToEndOfPath:self.distanceToEndOfPath];
     }
 
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfRoute:)]) {
-        _distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
-        [delegate navigationKitCalculatedDistanceToEndOfRoute:_distanceToEndOfRoute];
+        self.distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
+        [delegate navigationKitCalculatedDistanceToEndOfRoute:self.distanceToEndOfRoute];
     }
 
     // Set the global variable 'currentStepInRoute' to 'currentStep' if updated
     // and notify delegate that text and voice instructions should be updated
-    if(currentStep != _currentStepInRoute) {
-        _currentStepInRoute = currentStep;
+    if(currentStep != self.currentStepInRoute) {
+        self.currentStepInRoute = currentStep;
         
         // Notify delegate that we entered a new step
         if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)])
@@ -166,11 +168,11 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         
         // Notify delegate to notify the user that we have entered a step (e.g. Speech Synthesizing)
         if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)]) {
-            [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:_distanceToEndOfPath];
+            [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:self.distanceToEndOfPath];
             // If the distance to the next step is less than 100m, don't repeat this message
             // Messages are repeated when the user comes to the end of the road (see below)
-            if(_distanceToEndOfPath < 100)
-                [_stepNotifications addObject:nextRouteStep];
+            if(self.distanceToEndOfPath < 100)
+                [self.stepNotifications addObject:nextRouteStep];
         }
     }
     
@@ -181,18 +183,18 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // Total distance of path is more than or equal to 1000m AND
     // OR if
     // Distance to end of path is less than or equal to 50m
-    if([_stepNotifications indexOfObject:nextRouteStep] == NSNotFound) {
-        if(_distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) {
+    if([self.stepNotifications indexOfObject:nextRouteStep] == NSNotFound) {
+        if(self.distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:_distanceToEndOfPath];
-            [_stepNotifications addObject:nextRouteStep];
+                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:self.distanceToEndOfPath];
+            [self.stepNotifications addObject:nextRouteStep];
             
-        } else if(_distanceToEndOfPath <= 150.0) {
+        } else if(self.distanceToEndOfPath <= 150.0) {
             
             if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:_distanceToEndOfPath];
-            [_stepNotifications addObject:nextRouteStep];
+                [delegate navigationKitCalculatedNotificationForStep:nextRouteStep inDistance:self.distanceToEndOfPath];
+            [self.stepNotifications addObject:nextRouteStep];
             
         }
     }
@@ -200,7 +202,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // Calculate the camera angle based on current step, heading and user settings
     if([delegate respondsToSelector:@selector(navigationKitCalculatedCamera:)]) {
         MKMapCamera *camera = nil;
-        if(_currentStepInRoute == 0)
+        if(self.currentStepInRoute == 0)
             camera = [self defaultCamera:location];
         else
             camera = [self cameraForStep:currentRouteStep location:location];
@@ -236,12 +238,12 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     MKDirectionsRequest *directionsRequest = [[MKDirectionsRequest alloc] init];
     
-    MKPlacemark *source = [[MKPlacemark alloc] initWithCoordinate:_source addressDictionary:nil];
-    MKPlacemark *destination = [[MKPlacemark alloc] initWithCoordinate:_destination addressDictionary:nil];
+    MKPlacemark *source = [[MKPlacemark alloc] initWithCoordinate:self.source addressDictionary:nil];
+    MKPlacemark *destination = [[MKPlacemark alloc] initWithCoordinate:self.destination addressDictionary:nil];
     
     [directionsRequest setSource:[[MKMapItem alloc] initWithPlacemark:source]];
     [directionsRequest setDestination:[[MKMapItem alloc] initWithPlacemark:destination]];
-    directionsRequest.transportType = _transportType;
+    directionsRequest.transportType = self.transportType;
     directionsRequest.requestsAlternateRoutes = YES;
     
     MKDirections *directions = [[MKDirections alloc] initWithRequest:directionsRequest];
@@ -274,8 +276,8 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
                 // first two points from the route
                 NSUInteger pos1 = 0;
                 NSUInteger pos2 = 1;
-                CLLocationCoordinate2D point1 = [[nkRoute.path objectAtIndex:pos1] MKCoordinateValue];
-                CLLocationCoordinate2D point2 = [[nkRoute.path objectAtIndex:pos2] MKCoordinateValue];
+                CLLocationCoordinate2D point1 = [nkRoute.path[pos1] MKCoordinateValue];
+                CLLocationCoordinate2D point2 = [nkRoute.path[pos2] MKCoordinateValue];
                 
                 // check if the two points are too close
                 BOOL shouldSkipHeadingCheck = NO;
@@ -291,8 +293,8 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
                     else
                     {
                         // check next step
-                        point1 = [[nkRoute.path objectAtIndex:++pos1] MKCoordinateValue];
-                        point2 = [[nkRoute.path objectAtIndex:++pos2] MKCoordinateValue];
+                        point1 = [nkRoute.path[++pos1] MKCoordinateValue];
+                        point2 = [nkRoute.path[++pos2] MKCoordinateValue];
                     }
                 }
                 
@@ -333,10 +335,10 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         // so the user wouldn't see stupid route that tells them to travel
         // through a long path then turn around multiple times
         //
-        _route = [[allRoutes sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"expectedTravelTime" ascending:YES]]] firstObject];
+        self.route = [[allRoutes sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"expectedTravelTime" ascending:YES]]] firstObject];
         
         if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
-            [delegate navigationKitCalculatedRoute:_route];
+            [delegate navigationKitCalculatedRoute:self.route];
     }];
 }
 
@@ -350,8 +352,8 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     int step = INT_MAX;
     
-    for(int i = initialOffset; i < _route.steps.count; i++) {
-        NKRouteStep *routeStep = [_route.steps objectAtIndex:i];
+    for(int i = initialOffset; i < self.route.steps.count; i++) {
+        NKRouteStep *routeStep = self.route.steps[i];
         //NSLog(@"step %d", i);
         if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
             step = i;
@@ -362,10 +364,10 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     if(step != INT_MAX)
         return step;
     
-    for(NKRouteStep *routeStep in _route.steps) {
-        //NSLog(@"step %d", (int)[_route.steps indexOfObject:routeStep]);
+    for(NKRouteStep *routeStep in self.route.steps) {
+        //NSLog(@"step %d", (int)[self.route.steps indexOfObject:routeStep]);
         if([CKGeometryUtility isCoordinate:location.coordinate onPath:[routeStep path] tolerance:15]) {
-            step = (int)[_route.steps indexOfObject:routeStep];
+            step = (int)[self.route.steps indexOfObject:routeStep];
             break;
         }
     }
@@ -380,14 +382,14 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     // If it's a straight road, get the distance between me and the last point
     if([path count] == 2)
-        return [location distanceFromLocation:[self locationFromCoordinate:[[path objectAtIndex:1] MKCoordinateValue]]];
+        return [location distanceFromLocation:[self locationFromCoordinate:[path[1] MKCoordinateValue]]];
     
     // Find the closest point
     CLLocationDistance smallestDistance = INT_MAX;
     int closestPoint = INT_MAX;
     
     for(int i = 0; i < [path count]; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[[path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:location];
+        CLLocationDistance distance = [[self locationFromCoordinate:[path[i] MKCoordinateValue]] distanceFromLocation:location];
         if(distance < smallestDistance) {
             smallestDistance = distance;
             closestPoint = i;
@@ -399,7 +401,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         return smallestDistance;
     
     for(int i = closestPoint; i < [path count]-1; i++) {
-        CLLocationDistance distance = [[self locationFromCoordinate:[[path objectAtIndex:i] MKCoordinateValue]] distanceFromLocation:[self locationFromCoordinate:[[path objectAtIndex:i+1] MKCoordinateValue]]];
+        CLLocationDistance distance = [[self locationFromCoordinate:[path[i] MKCoordinateValue]] distanceFromLocation:[self locationFromCoordinate:[path[i + 1] MKCoordinateValue]]];
         totalDistance += distance;
     }
     
@@ -414,7 +416,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 - (MKMapCamera *)defaultCamera:(CLLocation *)location {
   return [MKMapCamera cameraLookingAtCenterCoordinate:location.coordinate
                                     fromEyeCoordinate:location.coordinate
-                                          eyeAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
+                                          eyeAltitude:self.cameraAltitude == -1 ? 500 : self.cameraAltitude];
 }
 
 // Calculate the camera based on the users settings
@@ -462,8 +464,8 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     [newCamera setCenterCoordinate:coordinateWithOffset];
     [newCamera setPitch:60];
     [newCamera setHeading:heading];
-    _heading = heading;
-    [newCamera setAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
+    self.heading = heading;
+    [newCamera setAltitude:self.cameraAltitude == -1 ? 500 : self.cameraAltitude];
     
     return newCamera;
 }
