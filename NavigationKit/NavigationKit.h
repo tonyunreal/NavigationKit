@@ -39,6 +39,8 @@ typedef enum NavigationKitDirectionsService {
 @property (nonatomic, assign) NSInteger recalculatingTolerance;
 @property (nonatomic, assign) NSInteger cameraAltitude;
 
+@property (nonatomic) BOOL isNavigating;
+
 - (id)initWithSource:(CLLocationCoordinate2D)source destination:(CLLocationCoordinate2D)destination transportType:(MKDirectionsTransportType)transportType directionsService:(NavigationKitDirectionsService)directionsService;
 
 - (void)calculateDirections;
@@ -46,8 +48,6 @@ typedef enum NavigationKitDirectionsService {
 - (void)startNavigation;
 - (void)stopNavigation;
 - (void)recalculateNavigation;
-
-- (BOOL)isNavigating;
 
 - (void)calculateActionForLocation:(CLLocation *)location;
 + (CLLocationCoordinate2D)coordinate:(CLLocationCoordinate2D)fromCoordinate atDistance:(double)distance bearing:

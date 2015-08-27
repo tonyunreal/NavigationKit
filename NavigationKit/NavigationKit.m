@@ -24,7 +24,6 @@
 @property (nonatomic, strong) NKRoute *route;
 
 // Information to keep track of progress
-@property (nonatomic) BOOL navigating;
 @property (nonatomic) NSInteger currentStepInRoute;
 @property (nonatomic) CLLocationDistance distanceToEndOfPath;
 @property (nonatomic) CLLocationDistance distanceToEndOfRoute;
@@ -60,7 +59,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 }
 
 - (void)calculateDirectionsWithHeading:(CLLocationDirection)heading {
-    _navigating = NO;
+    self.isNavigating = NO;
     _route = nil;
     _currentStepInRoute = 0;
     _distanceToEndOfPath = 0;
@@ -87,7 +86,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 }
 
 - (void)startNavigation {
-    _navigating = YES;
+    self.isNavigating = YES;
     _heading = -1;
     if([delegate respondsToSelector:@selector(navigationKitStartedNavigation)])
         [delegate navigationKitStartedNavigation];
@@ -98,7 +97,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 }
 
 - (void)stopNavigation {
-    _navigating = NO;
+    self.isNavigating = NO;
     if([delegate respondsToSelector:@selector(navigationKitStoppedNavigation)])
         [delegate navigationKitStoppedNavigation];
 }
@@ -114,14 +113,10 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     [self startNavigation];
 }
 
-- (BOOL)isNavigating {
-    return _navigating;
-}
-
 - (void)calculateActionForLocation:(CLLocation *)location {
     
     // If Turn-by-Turn navigation is not enabled, don't perform any calculations
-    if(!_navigating || location == nil || _route == nil)
+    if(!self.isNavigating || location == nil || _route == nil)
         return;
     
     // Calculate wether the user is anywhere on the path returned from the directions service (i.e. on route)
@@ -417,11 +412,9 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 // The Default camera (for step 0, where we don't really have a heading yet)
 - (MKMapCamera *)defaultCamera:(CLLocation *)location {
-  MKMapCamera *camera = [MKMapCamera cameraLookingAtCenterCoordinate:[location coordinate]
-                                                   fromEyeCoordinate:[location coordinate]
-                                                         eyeAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
-  camera.heading = location.course;
-  return camera;
+  return [MKMapCamera cameraLookingAtCenterCoordinate:location.coordinate
+                                    fromEyeCoordinate:location.coordinate
+                                          eyeAltitude:_cameraAltitude == -1 ? 500 : _cameraAltitude];
 }
 
 // Calculate the camera based on the users settings
@@ -454,10 +447,16 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         return nil;
 
     // Get heading
-    CLLocationDirection heading = location.course;
-    CLLocationCoordinate2D coordinateWithOffset = [NavigationKit coordinate:[location coordinate] atDistance:200
+    // Sort it so we calculate heading based on points in order, regardless of which one is closest
+    int firstOccurance = first < second ? first : second;
+    int secondOccurance = first < second ? second : first;
+    // Get heading
+    CLLocationDirection heading = [CKGeometryUtility geometryHeadingFrom:[step.path[firstOccurance] MKCoordinateValue]
+                                                                      to:[step.path[secondOccurance] MKCoordinateValue]];
+
+    CLLocationCoordinate2D coordinateWithOffset = [NavigationKit coordinate:location.coordinate atDistance:200
                                                                     bearing:heading];
-    
+
     MKMapCamera *newCamera = [MKMapCamera camera];
     
     [newCamera setCenterCoordinate:coordinateWithOffset];
