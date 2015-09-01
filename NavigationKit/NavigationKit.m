@@ -263,11 +263,18 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         }
 
         // both of these are NKRoute objects
-        NSMutableArray *allRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
-      NSMutableArray *noturnRoutes = [self getNoturnRoutes:heading response:response allRoutes:allRoutes];
+      NSMutableArray *allRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
+      for (MKRoute *route in response.routes) {
+        // converts to NKRoute so we don't need to deal with C arrays
+        NKRoute *nkRoute = [[NKRoute alloc] initWithMKRoute:route];
 
-      if ([noturnRoutes count] > 0)
-        {
+        // add nkRoute to all routes
+        [allRoutes addObject:nkRoute];
+      }
+
+      NSMutableArray *noturnRoutes = [self getNoturnRoutes:heading response:allRoutes];
+
+      if ([noturnRoutes count] > 0) {
             // some routes don't involve turning around
             // even if this could result in longer drive time
             // this could still potentially be better
@@ -286,14 +293,9 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     }];
 }
 
-- (NSMutableArray *)getNoturnRoutes:(CLLocationDirection)heading response:(MKDirectionsResponse *)response allRoutes:(NSMutableArray *)allRoutes {
-  NSMutableArray *noturnRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
-  for (MKRoute *route in response.routes) {
-    // converts to NKRoute so we don't need to deal with C arrays
-    NKRoute *nkRoute = [[NKRoute alloc] initWithMKRoute:route];
-
-    // add nkRoute to all routes
-    [allRoutes addObject:nkRoute];
+- (NSMutableArray *)getNoturnRoutes:(CLLocationDirection)heading response:(NSMutableArray *)allRoutes {
+  NSMutableArray *noturnRoutes = [NSMutableArray arrayWithCapacity:allRoutes.count];
+  for (NKRoute *nkRoute in allRoutes) {
 
     // Check every route and find better ones based on current heading
     //
