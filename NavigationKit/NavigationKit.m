@@ -61,7 +61,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 - (void)calculateDirectionsWithHeading:(CLLocationDirection)heading {
     self.isNavigating = NO;
     self.route = nil;
-    self.currentStepInRoute = 0;
+    self.currentStepInRoute = 1;
     self.distanceToEndOfPath = 0;
     self.distanceToEndOfRoute = 0;
     self.stepNotifications = [[NSMutableArray alloc] init];
@@ -93,7 +93,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     // This might be a temporary fix, but for now, notify the delegate that we entered step "0"
     if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)]) {
-      NKRouteStep *firstStep = (self.route.steps.count >= 2) ? self.route.steps[1] : self.route.steps[0];
+      NKRouteStep *firstStep = self.route.steps[self.currentStepInRoute];
       [delegate navigationKitEnteredRouteStep:firstStep nextStep:self.route.steps[1]];
     }
 }
@@ -184,18 +184,13 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // OR if
     // Distance to end of path is less than or equal to 50m
     if([self.stepNotifications indexOfObject:currentRouteStep] == NSNotFound) {
-        if(self.distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) {
+        if((self.distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0) ||
+            self.distanceToEndOfPath <= 150.f) {
             
-            if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
-            [self.stepNotifications addObject:currentRouteStep];
-            
-        } else if(self.distanceToEndOfPath <= 150.0) {
-            
-            if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)])
-                [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
-            [self.stepNotifications addObject:currentRouteStep];
-            
+            if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)]) {
+              [self notifyForStep:currentRouteStep];
+            }
+
         }
     }
     
@@ -210,6 +205,14 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         if(camera)
             [delegate navigationKitCalculatedCamera:camera];
     }
+}
+
+- (void)notifyForStep:(NKRouteStep *)currentRouteStep {
+  [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
+  [self.stepNotifications addObject:currentRouteStep];
+  if (currentRouteStep == self.route.steps.lastObject) {
+    [self stopNavigation];
+  }
 }
 
 - (CLLocationDistance)distanceToEndOfRoute:(NKRouteStep *)curStep location:(CLLocation *)location {
