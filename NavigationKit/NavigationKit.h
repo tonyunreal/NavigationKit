@@ -28,6 +28,7 @@ typedef enum NavigationKitDirectionsService {
 - (void)navigationKitCalculatedCamera:(MKMapCamera *)camera;
 - (void)navigationKitStartedRecalculation;
 - (void)navigationKitStoppedNavigation;
+- (void)navigationKitArrivedAtDestination;
 
 @end
 
