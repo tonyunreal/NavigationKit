@@ -264,72 +264,9 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
         // both of these are NKRoute objects
         NSMutableArray *allRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
-        NSMutableArray *noturnRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
-        for (MKRoute *route in response.routes)
-        {
-            // converts to NKRoute so we don't need to deal with C arrays
-            NKRoute *nkRoute = [[NKRoute alloc] initWithMKRoute:route];
-            
-            // add nkRoute to all routes
-            [allRoutes addObject:nkRoute];
-            
-            // Check every route and find better ones based on current heading
-            //
-            // Why? because being told constantly to turn around when driving
-            // is not fun. :-/
-            //
-            if (heading >= 0.0)
-            {
-                // first two points from the route
-                NSUInteger pos1 = 0;
-                NSUInteger pos2 = 1;
-                CLLocationCoordinate2D point1 = [nkRoute.path[pos1] MKCoordinateValue];
-                CLLocationCoordinate2D point2 = [nkRoute.path[pos2] MKCoordinateValue];
-                
-                // check if the two points are too close
-                BOOL shouldSkipHeadingCheck = NO;
-                while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point2.latitude longitude:point2.longitude]] < 15)
-                {
-                    // all paths are too short so it doesn't matter
-                    if ([nkRoute.path count] <= pos2 + 1)
-                    {
-                        // no other steps
-                        shouldSkipHeadingCheck = YES;
-                        break;
-                    }
-                    else
-                    {
-                        // check next step
-                        point1 = [nkRoute.path[++pos1] MKCoordinateValue];
-                        point2 = [nkRoute.path[++pos2] MKCoordinateValue];
-                    }
-                }
-                
-                if (!shouldSkipHeadingCheck)
-                {
-                    // calculate heading from point1 to point2
-                    CLLocationDirection targetHeading = [CKGeometryUtility geometryHeadingFrom:point1 to:point2];
-                    
-                    // turning left or right is ok
-                    // turning more than 120 degrees is not
-                    double deltaHeading = fabs(targetHeading - heading);
-                    // deltaHeading should be 0~360
-                    if (deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0)
-                    {
-                        // turning more than 120 degrees, this path is not ok
-                        nkRoute = nil;
-                    }
-                }
-                
-                // adds this satisfying route as one of our options
-                if (nkRoute != nil)
-                {
-                    [noturnRoutes addObject:nkRoute];
-                }
-            } // end of if (heading)
-        }
-        
-        if ([noturnRoutes count] > 0)
+      NSMutableArray *noturnRoutes = [self getNoturnRoutes:heading response:response allRoutes:allRoutes];
+
+      if ([noturnRoutes count] > 0)
         {
             // some routes don't involve turning around
             // even if this could result in longer drive time
@@ -347,6 +284,66 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
             [delegate navigationKitCalculatedRoute:self.route];
     }];
+}
+
+- (NSMutableArray *)getNoturnRoutes:(CLLocationDirection)heading response:(MKDirectionsResponse *)response allRoutes:(NSMutableArray *)allRoutes {
+  NSMutableArray *noturnRoutes = [NSMutableArray arrayWithCapacity:[response.routes count]];
+  for (MKRoute *route in response.routes) {
+    // converts to NKRoute so we don't need to deal with C arrays
+    NKRoute *nkRoute = [[NKRoute alloc] initWithMKRoute:route];
+
+    // add nkRoute to all routes
+    [allRoutes addObject:nkRoute];
+
+    // Check every route and find better ones based on current heading
+    //
+    // Why? because being told constantly to turn around when driving
+    // is not fun. :-/
+    //
+    if (heading >= 0.0) {
+      // first two points from the route
+      NSUInteger pos1 = 0;
+      NSUInteger pos2 = 1;
+      CLLocationCoordinate2D point1 = [nkRoute.path[pos1] MKCoordinateValue];
+      CLLocationCoordinate2D point2 = [nkRoute.path[pos2] MKCoordinateValue];
+
+      // check if the two points are too close
+      BOOL shouldSkipHeadingCheck = NO;
+      while ([[[CLLocation alloc] initWithLatitude:point1.latitude longitude:point1.longitude] distanceFromLocation:[[CLLocation alloc] initWithLatitude:point2.latitude longitude:point2.longitude]] < 15) {
+        // all paths are too short so it doesn't matter
+        if ([nkRoute.path count] <= pos2 + 1) {
+          // no other steps
+          shouldSkipHeadingCheck = YES;
+          break;
+        }
+        else {
+          // check next step
+          point1 = [nkRoute.path[++pos1] MKCoordinateValue];
+          point2 = [nkRoute.path[++pos2] MKCoordinateValue];
+        }
+      }
+
+      if (!shouldSkipHeadingCheck) {
+        // calculate heading from point1 to point2
+        CLLocationDirection targetHeading = [CKGeometryUtility geometryHeadingFrom:point1 to:point2];
+
+        // turning left or right is ok
+        // turning more than 120 degrees is not
+        double deltaHeading = fabs(targetHeading - heading);
+        // deltaHeading should be 0~360
+        if (deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0) {
+          // turning more than 120 degrees, this path is not ok
+          nkRoute = nil;
+        }
+      }
+
+      // adds this satisfying route as one of our options
+      if (nkRoute != nil) {
+        [noturnRoutes addObject:nkRoute];
+      }
+    } // end of if (heading)
+  }
+  return noturnRoutes;
 }
 
 // Generate a CLLocation from a CLLocationCoordinate2D
