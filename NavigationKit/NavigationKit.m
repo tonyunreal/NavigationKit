@@ -27,27 +27,34 @@
 @property (nonatomic) NSInteger currentStepInRoute;
 @property (nonatomic) CLLocationDistance distanceToEndOfPath;
 @property (nonatomic) CLLocationDistance distanceToEndOfRoute;
-@property (nonatomic, strong) NSMutableArray *stepNotifications;
+@property (nonatomic, strong) NSMutableArray *completedNewStepNotifications;
 @property (nonatomic) CLLocationDirection heading;
 
 @property (nonatomic, strong) NSDate *lastCalculatedDate;
+@property (nonatomic, strong) NSMutableArray *completedSmallStepNotifications;
+@property (nonatomic, strong) NSMutableArray *completedMediumLargeStepNotifications;
 @end
 
 @implementation NavigationKit
 @synthesize delegate;
 static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
-- (id)initWithSource:(CLLocationCoordinate2D)source destination:(CLLocationCoordinate2D)destination transportType:(MKDirectionsTransportType)transportType directionsService:(NavigationKitDirectionsService)directionsService {
+- (id)initWithSource:(CLLocationCoordinate2D)source destination:(CLLocationCoordinate2D)destination
+       transportType:(MKDirectionsTransportType)transportType
+   directionsService:(NavigationKitDirectionsService)directionsService {
     self = [super init];
     
-    if(self) {
-        _source = source;
-        _destination = destination;
-        _transportType = transportType;
-        _directionsService = directionsService;
-        _recalculatingTolerance = -1;
-        _cameraAltitude = -1;
-        _heading = -1;
+    if (self) {
+      _source = source;
+      _destination = destination;
+      _transportType = transportType;
+      _directionsService = directionsService;
+      _recalculatingTolerance = -1;
+      _cameraAltitude = -1;
+      _heading = -1;
+      _nextTurnNotifSmallDistanceMeters = 150;
+      _nextTurnNotifMediumDistanceMeters = 800;
+      _nextTurnNotifLargeDistanceMeters = 1600;
     }
     
     return self;
@@ -59,30 +66,36 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 }
 
 - (void)calculateDirectionsWithHeading:(CLLocationDirection)heading {
-    self.isNavigating = NO;
-    self.route = nil;
-    self.currentStepInRoute = 1;
-    self.distanceToEndOfPath = 0;
-    self.distanceToEndOfRoute = 0;
-    self.stepNotifications = [[NSMutableArray alloc] init];
-    self.lastCalculatedDate = [NSDate date];
-    
-    switch (self.directionsService) {
-        case NavigationKitDirectionsServiceAppleMaps:
-            [self calculateDirectionsAppleMapsWithHeading:heading];
-            break;
-        default:
-        {
-            NSDictionary *userInfo = @{
-                                       NSLocalizedDescriptionKey: NSLocalizedString(@"Operation was unsuccessful.", nil),
-                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid Directions Service", nil)
-                                       };
+  [self resetState];
+
+  switch (self.directionsService) {
+    case NavigationKitDirectionsServiceAppleMaps:
+      [self calculateDirectionsAppleMapsWithHeading:heading];
+      break;
+    default: {
+      NSDictionary *userInfo = @{
+          NSLocalizedDescriptionKey: NSLocalizedString(@"Operation was unsuccessful.", nil),
+          NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid Directions Service", nil)
+      };
             
-            if([delegate respondsToSelector:@selector(navigationKitError:)])
-                [delegate navigationKitError:[NSError errorWithDomain:NavigationKitErrorDomain code:-1 userInfo:userInfo]];
-            break;
-        }
+      if ([delegate respondsToSelector:@selector(navigationKitError:)]) {
+        [delegate navigationKitError:[NSError errorWithDomain:NavigationKitErrorDomain code:-1 userInfo:userInfo]];
+      }
+      break;
     }
+  }
+}
+
+- (void)resetState {
+  self.isNavigating = NO;
+  self.route = nil;
+  self.currentStepInRoute = 1;
+  self.distanceToEndOfPath = 0;
+  self.distanceToEndOfRoute = 0;
+  self.completedNewStepNotifications = [@[] mutableCopy];
+  self.completedSmallStepNotifications = [@[] mutableCopy];
+  self.completedMediumLargeStepNotifications = [@[] mutableCopy];
+  self.lastCalculatedDate = [NSDate date];
 }
 
 - (void)startNavigation {
@@ -100,16 +113,18 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 - (void)stopNavigation {
     self.isNavigating = NO;
-    if([delegate respondsToSelector:@selector(navigationKitStoppedNavigation)])
-        [delegate navigationKitStoppedNavigation];
+    if ([delegate respondsToSelector:@selector(navigationKitStoppedNavigation)]) {
+      [delegate navigationKitStoppedNavigation];
+    }
 }
 
 - (void)recalculateNavigation {
     if ([[NSDate date] timeIntervalSinceDate:self.lastCalculatedDate] < kMinTimeBetweenRecalculations) return;
 
-    if([delegate respondsToSelector:@selector(navigationKitStartedRecalculation)])
-        [delegate navigationKitStartedRecalculation];
-    
+    if ([delegate respondsToSelector:@selector(navigationKitStartedRecalculation)]) {
+      [delegate navigationKitStartedRecalculation];
+    }
+
     [self stopNavigation];
     [self calculateDirectionsWithHeading:self.heading];
     [self startNavigation];
@@ -144,14 +159,15 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     NKRouteStep *currentRouteStep = self.route.steps[currentStep];
     NKRouteStep *nextRouteStep = [self.route steps].count - 1 > currentStep ? self.route.steps[currentStep + 1] : nil;
     
+    self.distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
+
     // Calculate the driving distance to the end of the current path
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfPath:)]) {
-        self.distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
         [delegate navigationKitCalculatedDistanceToEndOfPath:self.distanceToEndOfPath];
     }
 
+    self.distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfRoute:)]) {
-        self.distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
         [delegate navigationKitCalculatedDistanceToEndOfRoute:self.distanceToEndOfRoute];
     }
 
@@ -165,12 +181,9 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
             [delegate navigationKitEnteredRouteStep:currentRouteStep nextStep:nextRouteStep];
         
         // Notify delegate to notify the user that we have entered a step (e.g. Speech Synthesizing)
-        if([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)]) {
-            [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
-            // If the distance to the next step is less than 100m, don't repeat this message
-            // Messages are repeated when the user comes to the end of the road (see below)
-            if(self.distanceToEndOfPath < 100)
-                [self.stepNotifications addObject:currentRouteStep];
+        if ([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:forDistanceType:)]) {
+          [self notify:NavigationKitNotificationDistanceTypeNewDirection forStep:currentRouteStep
+            inDistance:self.distanceToEndOfPath];
         }
     }
     
@@ -181,15 +194,8 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // Total distance of path is more than or equal to 1000m AND
     // OR if
     // Distance to end of path is less than or equal to 50m
-    if ([self.stepNotifications indexOfObject:currentRouteStep] == NSNotFound) {
-        if ((self.distanceToEndOfPath <= 300.0 && currentRouteStep.distance >= 1000.0)) {
-          [self notifyForStep:currentRouteStep];
-        } else if (self.distanceToEndOfPath <= 150.f) {
-          [self notifyForStep:currentRouteStep];
-          if (currentRouteStep == self.route.steps.lastObject) {
-            [self arrivedAtDestination];
-          }
-        }
+    if ([self.completedNewStepNotifications indexOfObject:currentRouteStep] == NSNotFound) {
+      [self notifyNextStep:currentRouteStep inDistance:self.distanceToEndOfPath];
     }
     
     // Calculate the camera angle based on current step, heading and user settings
@@ -205,17 +211,65 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     }
 }
 
+- (BOOL)notifyNextStep:(NKRouteStep *)step inDistance:(CLLocationDistance)distanceToEndOfPath {
+  if (distanceToEndOfPath < self.nextTurnNotifSmallDistanceMeters &&
+      ![self hasNotifiedSmallStep:step]) {
+    [self notify:NavigationKitNotificationDistanceTypeSmall forStep:step inDistance:distanceToEndOfPath];
+
+    return YES;
+  } else if (distanceToEndOfPath < self.nextTurnNotifMediumDistanceMeters &&
+      ![self hasNotifiedMediumLargeStep:step]) {
+    [self notify:NavigationKitNotificationDistanceTypeMedium forStep:step inDistance:distanceToEndOfPath];
+    return YES;
+  } else if (distanceToEndOfPath < self.nextTurnNotifLargeDistanceMeters &&
+      ![self hasNotifiedMediumLargeStep:step]) {
+    [self notify:NavigationKitNotificationDistanceTypeLarge forStep:step inDistance:distanceToEndOfPath];
+    return YES;
+  }
+  return NO;
+}
+
+- (BOOL)hasNotifiedSmallStep:(NKRouteStep *)step {
+  return [self.completedSmallStepNotifications indexOfObject:step] != NSNotFound;
+}
+
+- (BOOL)hasNotifiedMediumLargeStep:(NKRouteStep *)step {
+  return [self.completedMediumLargeStepNotifications indexOfObject:step] != NSNotFound;
+}
+
+- (void)notify:(enum NavigationKitNotificationDistanceType)distanceType forStep:(NKRouteStep *)step
+    inDistance:(CLLocationDistance)distanceToEndOfPath {
+  if ([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:forDistanceType:)]) {
+    [delegate navigationKitCalculatedNotificationForStep:step inDistance:distanceToEndOfPath
+                                         forDistanceType:distanceType];
+  }
+  if (distanceType == NavigationKitNotificationDistanceTypeSmall) {
+    [self.completedSmallStepNotifications addObject:step];
+  } else if (distanceType == NavigationKitNotificationDistanceTypeMedium ||
+      distanceType == NavigationKitNotificationDistanceTypeLarge) {
+    [self.completedMediumLargeStepNotifications addObject:step];
+  } else if (distanceType == NavigationKitNotificationDistanceTypeNewDirection) {
+    [self.completedNewStepNotifications addObject:step];
+
+    // If we just notified about a new turn and we are under the small step notification, don't bother sending
+    // another notif.
+    if (distanceToEndOfPath < self.nextTurnNotifSmallDistanceMeters) {
+      [self.completedMediumLargeStepNotifications addObject:step];
+      [self.completedSmallStepNotifications addObject:step];
+    } else if (distanceToEndOfPath < self.nextTurnNotifMediumDistanceMeters) {
+      [self.completedMediumLargeStepNotifications addObject:step];
+    }
+  }
+
+  if (step == self.route.steps.lastObject && distanceToEndOfPath < self.nextTurnNotifSmallDistanceMeters) {
+    [self arrivedAtDestination];
+  }
+}
+
 - (void)arrivedAtDestination {
   [self stopNavigation];
   if ([delegate respondsToSelector:@selector(navigationKitArrivedAtDestination)]) {
     [delegate navigationKitArrivedAtDestination];
-  }
-}
-
-- (void)notifyForStep:(NKRouteStep *)currentRouteStep {
-  if ([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:)]) {
-    [delegate navigationKitCalculatedNotificationForStep:currentRouteStep inDistance:self.distanceToEndOfPath];
-    [self.stepNotifications addObject:currentRouteStep];
   }
 }
 
@@ -287,7 +341,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         // through a long path then turn around multiple times
         //
         self.route = [[allRoutes sortedArrayUsingDescriptors:[NSArray arrayWithObject:[NSSortDescriptor sortDescriptorWithKey:@"expectedTravelTime" ascending:YES]]] firstObject];
-        
+
         if([delegate respondsToSelector:@selector(navigationKitCalculatedRoute:)])
             [delegate navigationKitCalculatedRoute:self.route];
     }];
