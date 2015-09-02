@@ -445,21 +445,21 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     for(int i = 0; i < [path count]; i++) {
         CLLocationDistance distance = [[self locationFromCoordinate:[path[i] MKCoordinateValue]] distanceFromLocation:location];
-        if(distance < smallestDistance) {
+        if (distance < smallestDistance) {
             smallestDistance = distance;
             closestPoint = i;
         }
     }
     
     // Find the total distance from the closest point to the last point
-    if(closestPoint == [path count])
-        return smallestDistance;
-    
-    for(int i = closestPoint; i < [path count]-1; i++) {
+    if (closestPoint == path.count - 1) {
+      return smallestDistance;
+    }
+
+    for (int i = closestPoint; i < path.count - 1; i++) {
         CLLocationDistance distance = [[self locationFromCoordinate:[path[i] MKCoordinateValue]] distanceFromLocation:[self locationFromCoordinate:[path[i + 1] MKCoordinateValue]]];
         totalDistance += distance;
     }
-    
     return totalDistance;
 }
 
