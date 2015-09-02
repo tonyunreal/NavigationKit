@@ -333,15 +333,10 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
         // turning more than 120 degrees is not
         double deltaHeading = fabs(targetHeading - heading);
         // deltaHeading should be 0~360
-        if (deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0) {
-          // turning more than 120 degrees, this path is not ok
-          nkRoute = nil;
+        // turning more than 120 degrees, this path is not ok
+        if (!(deltaHeading >= 120.0 && deltaHeading <= 360.0 - 120.0)) {
+          [noturnRoutes addObject:nkRoute];
         }
-      }
-
-      // adds this satisfying route as one of our options
-      if (nkRoute != nil) {
-        [noturnRoutes addObject:nkRoute];
       }
     } // end of if (heading)
   }
