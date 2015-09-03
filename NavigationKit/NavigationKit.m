@@ -24,7 +24,7 @@
 @property (nonatomic, strong) NKRoute *route;
 
 // Information to keep track of progress
-@property (nonatomic) NSInteger currentStepInRoute;
+@property (nonatomic) NSInteger lastCurrentStepNum;
 @property (nonatomic) CLLocationDistance distanceToEndOfPath;
 @property (nonatomic) CLLocationDistance distanceToEndOfRoute;
 @property (nonatomic, strong) NSMutableArray *completedNewStepNotifications;
@@ -33,6 +33,7 @@
 @property (nonatomic, strong) NSDate *lastCalculatedDate;
 @property (nonatomic, strong) NSMutableArray *completedSmallStepNotifications;
 @property (nonatomic, strong) NSMutableArray *completedMediumLargeStepNotifications;
+@property (nonatomic, strong) NSMutableArray *enteredRouteStepNotifications;
 @end
 
 @implementation NavigationKit
@@ -89,12 +90,13 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 - (void)resetState {
   self.isNavigating = NO;
   self.route = nil;
-  self.currentStepInRoute = 1;
+  self.lastCurrentStepNum = 1;
   self.distanceToEndOfPath = 0;
   self.distanceToEndOfRoute = 0;
   self.completedNewStepNotifications = [@[] mutableCopy];
   self.completedSmallStepNotifications = [@[] mutableCopy];
   self.completedMediumLargeStepNotifications = [@[] mutableCopy];
+  self.enteredRouteStepNotifications = [@[] mutableCopy];
   self.lastCalculatedDate = [NSDate date];
 }
 
@@ -106,8 +108,11 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     // This might be a temporary fix, but for now, notify the delegate that we entered step "0"
     if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)]) {
-      NKRouteStep *firstStep = self.route.steps[self.currentStepInRoute];
-      [delegate navigationKitEnteredRouteStep:firstStep nextStep:self.route.steps[1]];
+      NKRouteStep *firstStep = self.route.steps[self.lastCurrentStepNum];
+      if (firstStep) {
+        [self.enteredRouteStepNotifications addObject:firstStep];
+        [delegate navigationKitEnteredRouteStep:firstStep nextStep:self.route.steps[1]];
+      }
     }
 }
 
@@ -148,41 +153,44 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     
     // Calculate which step we are on the path
     // Initially ignore steps that we have already "seen", but if a step was not found then, iterate through all steps in route
-    int currentStep = [self stepForLocation:location initialOffset:(int)self.currentStepInRoute];
-    //NSLog(@"current step = %d", currentStep);
+    int newCurrentStepNum = [self stepForLocation:location initialOffset:(int) self.lastCurrentStepNum];
+    //NSLog(@"current step = %d", newCurrentStepNum);
     
     // We can not currently find which step we are on
-    if(currentStep == INT_MAX) {
+    if(newCurrentStepNum == INT_MAX) {
       return;
     }
     
-    NKRouteStep *currentRouteStep = self.route.steps[currentStep];
-    NKRouteStep *nextRouteStep = [self.route steps].count - 1 > currentStep ? self.route.steps[currentStep + 1] : nil;
+    NKRouteStep *newCurrentRouteStep = self.route.steps[newCurrentStepNum];
+    NKRouteStep *nextRouteStep = [self.route steps].count - 1 > newCurrentStepNum ? self.route.steps[newCurrentStepNum + 1] : nil;
     
-    self.distanceToEndOfPath = [self distanceToEndOfPath:[currentRouteStep path] location:location];
+    self.distanceToEndOfPath = [self distanceToEndOfPath:[newCurrentRouteStep path] location:location];
 
     // Calculate the driving distance to the end of the current path
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfPath:)]) {
         [delegate navigationKitCalculatedDistanceToEndOfPath:self.distanceToEndOfPath];
     }
 
-    self.distanceToEndOfRoute = [self distanceToEndOfRoute:currentRouteStep location:location];
+    self.distanceToEndOfRoute = [self distanceToEndOfRoute:newCurrentRouteStep location:location];
     if([delegate respondsToSelector:@selector(navigationKitCalculatedDistanceToEndOfRoute:)]) {
         [delegate navigationKitCalculatedDistanceToEndOfRoute:self.distanceToEndOfRoute];
     }
 
-    // Set the global variable 'currentStepInRoute' to 'currentStep' if updated
+    // Set the global variable 'lastCurrentStepNum' to 'newCurrentStepNum' if updated
     // and notify delegate that text and voice instructions should be updated
-    if(currentStep != self.currentStepInRoute) {
-        self.currentStepInRoute = currentStep;
+    if(newCurrentStepNum != self.lastCurrentStepNum || newCurrentStepNum == 1) {
+        self.lastCurrentStepNum = newCurrentStepNum;
         
         // Notify delegate that we entered a new step
-        if([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)])
-            [delegate navigationKitEnteredRouteStep:currentRouteStep nextStep:nextRouteStep];
+        if ([delegate respondsToSelector:@selector(navigationKitEnteredRouteStep:nextStep:)] &&
+            ![self hasNotifiedEnteredStep:newCurrentRouteStep]) {
+          [self.enteredRouteStepNotifications addObject:newCurrentRouteStep];
+          [delegate navigationKitEnteredRouteStep:newCurrentRouteStep nextStep:nextRouteStep];
+        }
         
         // Notify delegate to notify the user that we have entered a step (e.g. Speech Synthesizing)
-        if ([delegate respondsToSelector:@selector(navigationKitCalculatedNotificationForStep:inDistance:forDistanceType:)]) {
-          [self notify:NavigationKitNotificationDistanceTypeNewDirection forStep:currentRouteStep
+        if (![self hasNotifiedNewStep:newCurrentRouteStep]) {
+          [self notify:NavigationKitNotificationDistanceTypeNewDirection forStep:newCurrentRouteStep
             inDistance:self.distanceToEndOfPath];
         }
     }
@@ -194,17 +202,15 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     // Total distance of path is more than or equal to 1000m AND
     // OR if
     // Distance to end of path is less than or equal to 50m
-    if ([self.completedNewStepNotifications indexOfObject:currentRouteStep] == NSNotFound) {
-      [self notifyNextStep:currentRouteStep inDistance:self.distanceToEndOfPath];
-    }
-    
+  [self notifyNextStep:newCurrentRouteStep inDistance:self.distanceToEndOfPath];
+
     // Calculate the camera angle based on current step, heading and user settings
     if([delegate respondsToSelector:@selector(navigationKitCalculatedCamera:)]) {
         MKMapCamera *camera = nil;
-        if(self.currentStepInRoute == 0)
+        if(self.lastCurrentStepNum == 0)
             camera = [self defaultCamera:location];
         else
-            camera = [self cameraForStep:currentRouteStep location:location];
+            camera = [self cameraForStep:newCurrentRouteStep location:location];
         
         if(camera)
             [delegate navigationKitCalculatedCamera:camera];
@@ -227,6 +233,14 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
     return YES;
   }
   return NO;
+}
+
+- (BOOL)hasNotifiedEnteredStep:(NKRouteStep *)step {
+  return [self.enteredRouteStepNotifications indexOfObject:step] != NSNotFound;
+}
+
+- (BOOL)hasNotifiedNewStep:(NKRouteStep *)step {
+  return [self.completedNewStepNotifications indexOfObject:step] != NSNotFound;
 }
 
 - (BOOL)hasNotifiedSmallStep:(NKRouteStep *)step {
@@ -275,7 +289,7 @@ static NSTimeInterval kMinTimeBetweenRecalculations = 10.f;
 
 - (CLLocationDistance)distanceToEndOfRoute:(NKRouteStep *)curStep location:(CLLocation *)location {
   CLLocationDistance totalDistance = [self distanceToEndOfPath:curStep.path location:location];
-  for (NSUInteger i = self.route.steps.count - 1; i > self.currentStepInRoute; i--) {
+  for (NSUInteger i = self.route.steps.count - 1; i > self.lastCurrentStepNum; i--) {
     NKRouteStep *step = self.route.steps[i];
     totalDistance += [self pathDistance:step.path];
   }
