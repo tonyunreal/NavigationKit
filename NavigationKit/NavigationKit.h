@@ -13,7 +13,7 @@
 #import "NKRouteStep.h"
 
 typedef enum NavigationKitDirectionsService {
-    NavigationKitDirectionsServiceAppleMaps
+  NavigationKitDirectionsServiceAppleMaps
 } NavigationKitDirectionsService;
 
 // Used in navigationKitEnteredRouteStep to let the delegate know what distance the notification is for.
@@ -57,11 +57,11 @@ typedef NS_ENUM(NSInteger, NavigationKitNotificationDistanceType) {
 // 1: When the user enters the new path, e.g. they just turned onto a street and need to hear their next direction.
 // 2: When the user is EITHER medium or large distance from the next turn.
 // 3: When the user is small distance from the next turn.
-@property (nonatomic) NSInteger nextTurnNotifSmallDistanceMeters;
+@property (nonatomic) CGFloat nextTurnNotifSmallEtaSeconds;
 
-@property (nonatomic) NSInteger nextTurnNotifMediumDistanceMeters;
+@property (nonatomic) CGFloat nextTurnNotifMediumEtaSeconds;
 
-@property (nonatomic) NSInteger nextTurnNotifLargeDistanceMeters;
+@property (nonatomic) CGFloat nextTurnNotifLargeEtaSeconds;
 
 - (id)initWithSource:(CLLocationCoordinate2D)source destination:(CLLocationCoordinate2D)destination transportType:(MKDirectionsTransportType)transportType directionsService:(NavigationKitDirectionsService)directionsService;
 
