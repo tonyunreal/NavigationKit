@@ -223,6 +223,7 @@ static double kMinNewMediumStepNotifDistance = 885.f; // .5499 mi
   NSNumber *etaSeconds = [self etaSecondsForDistance:distanceToEndOfPath withSpeed:speed];
   if (!etaSeconds) return NO;
   CGFloat etaFloat = etaSeconds.floatValue;
+  NSLog(@"Eta seconds %@", etaSeconds);
   if (etaFloat < self.nextTurnNotifSmallEtaSeconds &&
       ![self hasNotifiedSmallStep:step]) {
     [self notify:NavigationKitNotificationDistanceTypeSmall forStep:step inDistance:distanceToEndOfPath forSpeed:speed];
@@ -477,7 +478,6 @@ static double kMinNewMediumStepNotifDistance = 885.f; // .5499 mi
   }
   // Find the total distance from the closest point to the last point
   if (closestPoint == path.count - 1) {
-        closestPoint, path.count - 1);
     return smallestDistance;
   }
 
