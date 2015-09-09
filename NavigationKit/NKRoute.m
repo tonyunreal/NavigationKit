@@ -46,6 +46,7 @@
         
         // Save expectedTravelTime
         self.expectedTravelTime = [route expectedTravelTime];
+        self.distance = route.distance;
     }
     
     return self;
